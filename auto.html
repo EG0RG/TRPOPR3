@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Автопрокат - Система бронирования</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">Автопрокат</div>
+                <nav>
+                    <ul>
+                        <li><a href="#" class="nav-link active" data-section="booking">Бронирование</a></li>
+                        <li><a href="#" class="nav-link" data-section="confirmed-reports">Подтвержденные заявки</a></li>
+                        <li><a href="#" class="nav-link" data-section="available-cars">Свободные автомобили</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Секция бронирования -->
+            <section id="booking" class="section active">
+                <h2 class="section-title">Бронирование автомобиля</h2>
+                
+                <div class="card">
+                    <form id="booking-form">
+                        <div class="form-group">
+                            <label for="car-class">Класс автомобиля:</label>
+                            <select id="car-class" required>
+                                <option value="">Выберите класс</option>
+                                <option value="economy">Эконом</option>
+                                <option value="comfort">Комфорт</option>
+                                <option value="business">Бизнес</option>
+                                <option value="suv">Внедорожник</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="start-date">Дата начала аренды:</label>
+                            <input type="date" id="start-date" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="rental-duration">Продолжительность проката (дни):</label>
+                            <input type="number" id="rental-duration" min="1" max="30" value="1" required>
+                        </div>
+                        
+                        <button type="submit">Найти автомобиль</button>
+                    </form>
+                </div>
+
+                <!-- Результаты поиска -->
+                <div id="search-results" class="card hidden">
+                    <h3>Результаты поиска</h3>
+                    <div id="available-cars-list"></div>
+                    <div id="alternative-options" class="hidden">
+                        <h4>Альтернативные варианты:</h4>
+                        <div id="alternative-dates"></div>
+                        <div id="alternative-classes"></div>
+                    </div>
+                </div>
+
+                <!-- Форма подтверждения брони -->
+                <div id="confirmation-form" class="card hidden">
+                    <h3>Подтверждение бронирования</h3>
+                    <form id="confirm-booking">
+                        <div class="form-group">
+                            <label for="client-name">ФИО клиента:</label>
+                            <input type="text" id="client-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="client-phone">Телефон:</label>
+                            <input type="tel" id="client-phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="client-email">Email:</label>
+                            <input type="email" id="client-email" required>
+                        </div>
+                        <div class="booking-summary">
+                            <h4>Детали бронирования:</h4>
+                            <p id="summary-car"></p>
+                            <p id="summary-period"></p>
+                        </div>
+                        <button type="submit">Подтвердить бронирование</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Секция отчетов по подтвержденным заявкам -->
+            <section id="confirmed-reports" class="section">
+                <h2 class="section-title">Отчет по подтвержденным заявкам</h2>
+                
+                <div class="card">
+                    <form id="reports-filter">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="report-month">Месяц:</label>
+                                <select id="report-month">
+                                    <option value="1">Январь</option>
+                                    <option value="2">Февраль</option>
+                                    <option value="3">Март</option>
+                                    <option value="4">Апрель</option>
+                                    <option value="5">Май</option>
+                                    <option value="6">Июнь</option>
+                                    <option value="7">Июль</option>
+                                    <option value="8">Август</option>
+                                    <option value="9">Сентябрь</option>
+                                    <option value="10">Октябрь</option>
+                                    <option value="11">Ноябрь</option>
+                                    <option value="12">Декабрь</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="report-year">Год:</label>
+                                <input type="number" id="report-year" min="2024" max="2030" value="2024">
+                            </div>
+                        </div>
+                        <button type="submit">Сформировать отчет</button>
+                    </form>
+                </div>
+
+                <div id="reports-results" class="card">
+                    <h3>Подтвержденные заявки</h3>
+                    <div class="table-container">
+                        <table id="confirmed-bookings-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Клиент</th>
+                                    <th>Класс авто</th>
+                                    <th>Период аренды</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Данные будут заполняться через JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Секция свободных автомобилей -->
+            <section id="available-cars" class="section">
+                <h2 class="section-title">Свободные автомобили</h2>
+                
+                <div class="card">
+                    <form id="availability-check">
+                        <div class="form-group">
+                            <label for="check-date">Дата проверки:</label>
+                            <input type="date" id="check-date" required>
+                        </div>
+                        <button type="submit">Проверить доступность</button>
+                    </form>
+                </div>
+
+                <div id="availability-results" class="card">
+                    <h3>Доступные автомобили</h3>
+                    <div class="cars-grid">
+                        <!-- Карточки автомобилей будут добавляться через JavaScript -->
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Автопрокат. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
