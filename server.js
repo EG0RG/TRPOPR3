@@ -122,4 +122,4 @@ app.listen(PORT, () => {
   console.log('📄 Открой в браузере: http://localhost:3000/auto.html');
   console.log('📊 API тест 1: http://localhost:3000/api/cars-by-class/1');
   console.log('📊 API тест 2: http://localhost:3000/api/bookings-by-status/confirmed');
-});
+});// Проект завершен
