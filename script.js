@@ -1,5 +1,6 @@
 // Глобальные переменные
 let currentBookingData = null;
+const API_BASE = 'http://localhost:3000/api';
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
@@ -7,7 +8,71 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeForms();
     setDefaultDates();
     loadCarClasses();
+    
+    // 📊 Загружаем данные с бэкенда при старте
+    loadCarsFromBackend();
+    loadConfirmedBookingsFromBackend();
 });
+
+// 📊 ФРОНТЕНД ПУНКТ 1: Загрузка автомобилей с бэкенда
+async function loadCarsFromBackend() {
+    try {
+        const response = await fetch(`${API_BASE}/cars`);
+        if (!response.ok) throw new Error('Ошибка загрузки автомобилей');
+        
+        const backendCars = await response.json();
+        console.log('Автомобили с бэкенда:', backendCars);
+        
+        // Можно использовать эти данные для отображения
+        displayBackendCars(backendCars);
+    } catch (error) {
+        console.error('Ошибка загрузки автомобилей с бэкенда:', error);
+    }
+}
+
+function displayBackendCars(backendCars) {
+    // Пример: отображаем в консоли или можно добавить в интерфейс
+    if (backendCars && backendCars.length > 0) {
+        console.log('📊 Автомобили из базы данных:');
+        backendCars.forEach(car => {
+            console.log(`- ${car.brand} ${car.model} (${car.year}) - ${car.price} руб.`);
+        });
+    }
+}
+
+// 📊 ФРОНТЕНД ПУНКТ 2: Загрузка подтвержденных бронирований с бэкенда
+async function loadConfirmedBookingsFromBackend() {
+    try {
+        const response = await fetch(`${API_BASE}/bookings-by-status/confirmed`);
+        if (!response.ok) throw new Error('Ошибка загрузки бронирований');
+        
+        const result = await response.json();
+        console.log('Подтвержденные бронирования с бэкенда:', result);
+        
+        // Обновляем таблицу подтвержденных заявок
+        updateConfirmedBookingsTable(result.bookings);
+    } catch (error) {
+        console.error('Ошибка загрузки бронирований с бэкенда:', error);
+    }
+}
+
+function updateConfirmedBookingsTable(bookings) {
+    const tbody = document.querySelector('#confirmed-bookings-table tbody');
+    if (!bookings || bookings.length === 0) return;
+    
+    // Добавляем строки с данными из бэкенда
+    bookings.forEach(booking => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>Б-${booking.id}</td>
+            <td>${booking.client_name}<br><small>${booking.client_phone}</small></td>
+            <td>${booking.class_name}<br><small>${booking.car_model}</small></td>
+            <td>${booking.start_date} - ${booking.end_date}</td>
+            <td class="status-confirmed">${booking.status === 'confirmed' ? 'Подтверждено' : booking.status}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
 
 // Навигация между разделами
 function initializeNavigation() {
@@ -25,6 +90,11 @@ function initializeNavigation() {
             this.classList.add('active');
             const sectionId = this.getAttribute('data-section');
             document.getElementById(sectionId).classList.add('active');
+            
+            // При переходе на страницу отчетов загружаем актуальные данные
+            if (sectionId === 'confirmed-reports') {
+                loadConfirmedBookingsFromBackend();
+            }
         });
     });
 }
@@ -125,8 +195,41 @@ function searchCars() {
         return;
     }
     
-    const result = checkAvailability(carClassId, startDate, duration);
-    displaySearchResults(result, carClassId, startDate, duration);
+    // 📊 Используем API для получения автомобилей по классу
+    loadCarsByClassFromBackend(carClassId, startDate, duration);
+}
+
+// 📊 Загрузка автомобилей по классу с бэкенда
+async function loadCarsByClassFromBackend(classId, startDate, duration) {
+    try {
+        const response = await fetch(`${API_BASE}/cars-by-class/${classId}`);
+        if (!response.ok) throw new Error('Ошибка загрузки автомобилей по классу');
+        
+        const result = await response.json();
+        
+        // Проверяем доступность автомобилей
+        const availableCars = result.cars.filter(car => 
+            isCarAvailable(car.id, startDate, duration)
+        );
+        
+        const searchResult = {
+            available: availableCars.length > 0,
+            available_cars: availableCars.map(car => ({
+                ...car,
+                total_price: car.daily_price * duration
+            })),
+            alternative_dates: findAlternativeDates(classId, startDate, duration),
+            alternative_classes: findAlternativeClasses(startDate, duration, classId)
+        };
+        
+        displaySearchResults(searchResult, classId, startDate, duration);
+        
+    } catch (error) {
+        console.error('Ошибка:', error);
+        // fallback на локальные данные
+        const localResult = checkAvailability(classId, startDate, duration);
+        displaySearchResults(localResult, classId, startDate, duration);
+    }
 }
 
 // Проверка доступности
@@ -356,6 +459,22 @@ function confirmBooking() {
     document.getElementById('confirmation-form').classList.add('hidden');
     document.getElementById('search-results').classList.add('hidden');
     document.getElementById('booking-form').reset();
+    
+    // 📊 Обновляем данные на бэкенде
+    updateBackendWithNewBooking(newBooking);
+}
+
+// 📊 Обновление бэкенда с новым бронированием
+async function updateBackendWithNewBooking(booking) {
+    try {
+        // Здесь можно отправить данные на бэкенд
+        console.log('Новое бронирование для отправки на бэкенд:', booking);
+        
+        // Обновляем список подтвержденных бронирований
+        loadConfirmedBookingsFromBackend();
+    } catch (error) {
+        console.error('Ошибка обновления бэкенда:', error);
+    }
 }
 
 // Загрузка отчета по подтвержденным заявкам
