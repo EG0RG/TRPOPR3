@@ -1,5 +1,7 @@
 const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 const PORT = 3000;
@@ -7,119 +9,265 @@ const PORT = 3000;
 // Middleware
 app.use(express.json());
 app.use(cors());
-app.use(express.static(__dirname)); // Обслуживаем файлы из ТЕКУЩЕЙ папки
+app.use(express.static('.'));
 
-// 📊 ПУНКТ 1: Получить автомобили по классу
-app.get('/api/cars-by-class/:classId', (req, res) => {
-    const classId = parseInt(req.params.classId);
-    
-    const carClasses = [
-        { id: 1, name: 'economy', daily_price: 1500, description: 'Бюджетные автомобили для городской езды' },
-        { id: 2, name: 'comfort', daily_price: 2500, description: 'Комфортабельные седаны для поездок' },
-        { id: 3, name: 'business', daily_price: 5000, description: 'Премиальные автомобили для бизнеса' },
-        { id: 4, name: 'suv', daily_price: 4000, description: 'Внедорожники для путешествий' }
-    ];
-
-const cars = [
-    { id: 1, model: 'Toyota Corolla', class_id: 1, license_plate: '1234 AB-1', year: 2022, color: 'Белый', features: 'Кондиционер, Bluetooth' },
-    { id: 2, model: 'Hyundai Solaris', class_id: 1, license_plate: '5678 BC-1', year: 2021, color: 'Серый', features: 'Кондиционер, парктроник' },
-    { id: 3, model: 'Kia Rio', class_id: 1, license_plate: '9012 CD-1', year: 2023, color: 'Красный', features: 'Климат-контроль, камера' },
-    { id: 4, model: 'Volkswagen Passat', class_id: 2, license_plate: '3456 DE-1', year: 2022, color: 'Черный', features: 'Кожаный салон, подогрев сидений' },
-    { id: 5, model: 'Skoda Octavia', class_id: 2, license_plate: '7890 EF-1', year: 2023, color: 'Синий', features: 'Панорамная крыша, ксенон' },
-    { id: 6, model: 'Toyota Camry', class_id: 2, license_plate: '1234 GH-1', year: 2022, color: 'Белый', features: 'Кожа, климат-контроль' },
-    { id: 7, model: 'Mercedes E-Class', class_id: 3, license_plate: '5678 IJ-1', year: 2023, color: 'Черный', features: 'Память сидений, массаж' },
-    { id: 8, model: 'BMW 5 Series', class_id: 3, license_plate: '9012 KL-1', year: 2022, color: 'Серый', features: 'Парктроник, камера 360' },
-    { id: 9, model: 'Audi A6', class_id: 3, license_plate: '3456 MN-1', year: 2023, color: 'Синий', features: 'Полный привод, премиум аудио' },
-    { id: 10, model: 'Toyota RAV4', class_id: 4, license_plate: '7890 OP-1', year: 2022, color: 'Белый', features: 'Полный привод, круиз-контроль' },
-    { id: 11, model: 'Honda CR-V', class_id: 4, license_plate: '1234 QR-1', year: 2023, color: 'Красный', features: 'Парктроник, камера' },
-    { id: 12, model: 'Nissan X-Trail', class_id: 4, license_plate: '5678 ST-1', year: 2022, color: 'Черный', features: 'Климат-контроль, подогрев руля' }
-];
-    
-    const carsInClass = cars.filter(car => car.class_id === classId);
-    
-    if (carsInClass.length === 0) {
-        return res.status(404).json({ error: 'Автомобили данного класса не найдены' });
+// Подключение к БАЗЕ ДАННЫХ
+const db = new sqlite3.Database('./car_rental.db', (err) => {
+    if (err) {
+        console.error('❌ Ошибка подключения к БД:', err.message);
+    } else {
+        console.log('✅ Подключено к базе данных car_rental.db');
+        initDatabase();
     }
+});
+
+// Инициализация БД - УПРОЩЕННАЯ И РАБОЧАЯ ВЕРСИЯ
+function initDatabase() {
+    console.log('🔄 Инициализация базы данных...');
     
-    const classInfo = carClasses.find(cls => cls.id === classId);
-    const result = carsInClass.map(car => ({
-        ...car,
-        class_name: classInfo ? classInfo.name : 'Неизвестно',
-        daily_price: classInfo ? classInfo.daily_price : 0
-    }));
+    db.serialize(() => {
+        // Создаем таблицы
+        db.run(`CREATE TABLE IF NOT EXISTS car_classes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            daily_price REAL NOT NULL
+        )`);
+        
+        db.run(`CREATE TABLE IF NOT EXISTS cars (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            model TEXT NOT NULL,
+            class_id INTEGER,
+            license_plate TEXT UNIQUE,
+            year INTEGER,
+            color TEXT,
+            features TEXT
+        )`);
+        
+        db.run(`CREATE TABLE IF NOT EXISTS bookings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            client_name TEXT NOT NULL,
+            client_phone TEXT NOT NULL,
+            client_email TEXT NOT NULL,
+            car_id INTEGER,
+            start_date TEXT NOT NULL,
+            end_date TEXT NOT NULL,
+            status TEXT DEFAULT 'confirmed'
+        )`);
+
+        // Сначала исправляем цены
+        db.run("UPDATE car_classes SET daily_price = 1500 WHERE name = 'economy'");
+        db.run("UPDATE car_classes SET daily_price = 2500 WHERE name = 'comfort'");
+        db.run("UPDATE car_classes SET daily_price = 5000 WHERE name = 'business'");
+        db.run("UPDATE car_classes SET daily_price = 4000 WHERE name = 'suv'");
+        
+        // Добавляем классы автомобилей
+        const carClasses = [
+            ['economy', 1500],       
+            ['comfort', 2500],       
+            ['business', 5000],     
+            ['suv', 4000]           
+        ];
+        
+        const insertClass = db.prepare("INSERT OR IGNORE INTO car_classes (name, daily_price) VALUES (?, ?)");
+        carClasses.forEach(cls => {
+            insertClass.run(cls);
+        });
+        insertClass.finalize();
+
+        // Добавляем автомобили
+        const cars = [
+            ['Toyota Corolla', 1, '1234 AB-1', 2022, 'Белый', 'Кондиционер, Bluetooth'],
+            ['Hyundai Solaris', 1, '5678 BC-1', 2021, 'Серый', 'Кондиционер, парктроник'],
+            ['Kia Rio', 1, '9012 CD-1', 2023, 'Красный', 'Климат-контроль, камера'],
+            ['Volkswagen Passat', 2, '3456 DE-1', 2022, 'Черный', 'Кожаный салон, подогрев сидений'],
+            ['Skoda Octavia', 2, '7890 EF-1', 2023, 'Синий', 'Панорамная крыша, ксенон'],
+            ['Toyota Camry', 2, '1234 GH-1', 2022, 'Белый', 'Кожа, климат-контроль'],
+            ['Mercedes E-Class', 3, '5678 IJ-1', 2023, 'Черный', 'Память сидений, массаж'],
+            ['BMW 5 Series', 3, '9012 KL-1', 2022, 'Серый', 'Парктроник, камера 360'],
+            ['Audi A6', 3, '3456 MN-1', 2023, 'Синий', 'Полный привод, премиум аудио'],
+            ['Toyota RAV4', 4, '7890 OP-1', 2022, 'Белый', 'Полный привод, круиз-контроль'],
+            ['Honda CR-V', 4, '1234 QR-1', 2023, 'Красный', 'Парктроник, камера'],
+            ['Nissan X-Trail', 4, '5678 ST-1', 2022, 'Черный', 'Климат-контроль, подогрев руля']
+        ];
+        
+        const insertCar = db.prepare("INSERT OR IGNORE INTO cars (model, class_id, license_plate, year, color, features) VALUES (?, ?, ?, ?, ?, ?)");
+        cars.forEach(car => {
+            insertCar.run(car);
+        });
+        insertCar.finalize();
+
+        console.log('✅ База данных инициализирована');
+        
+        // Проверяем данные
+        db.all("SELECT name, daily_price FROM car_classes", (err, rows) => {
+            if (!err) {
+                console.log('📊 Классы автомобилей:');
+                rows.forEach(row => {
+                    console.log(`   ${row.name}: ${row.daily_price} руб.`);
+                });
+            }
+        });
+        
+        db.get("SELECT COUNT(*) as count FROM cars", (err, row) => {
+            if (!err) {
+                console.log(`📊 Всего автомобилей: ${row.count}`);
+            }
+        });
+    });
+}
+
+// 📊 API: Автомобили по названию класса
+app.get('/api/cars-by-class/:className', (req, res) => {
+    const className = req.params.className;
     
-    res.json({
-        class_info: classInfo,
-        cars: result,
-        total_count: result.length
+    console.log('🔍 Запрос автомобилей класса:', className);
+    
+    const query = `
+        SELECT c.*, cc.name as class_name, cc.daily_price 
+        FROM cars c 
+        LEFT JOIN car_classes cc ON c.class_id = cc.id 
+        WHERE cc.name = ?
+    `;
+    
+    db.all(query, [className], (err, rows) => {
+        if (err) {
+            console.error('❌ Ошибка БД:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        if (rows.length === 0) {
+            console.log('❌ Автомобили не найдены для класса:', className);
+            return res.status(404).json({ error: 'Автомобили не найдены' });
+        }
+        
+        console.log('✅ Найдено автомобилей:', rows.length);
+        
+        res.json({
+            class_info: {
+                name: className,
+                daily_price: rows[0].daily_price
+            },
+            cars: rows,
+            total_count: rows.length
+        });
     });
 });
 
-// 📊 ПУНКТ 2: Получить бронирования по статусу
+// 📊 API: Бронирования по статусу
 app.get('/api/bookings-by-status/:status', (req, res) => {
     const status = req.params.status;
-    const validStatuses = ['confirmed', 'completed', 'cancelled'];
     
-    if (!validStatuses.includes(status)) {
-        return res.status(400).json({ error: 'Неверный статус. Допустимые: confirmed, completed, cancelled' });
-    }
+    const query = `
+        SELECT b.*, c.model as car_model, cc.name as class_name 
+        FROM bookings b
+        LEFT JOIN cars c ON b.car_id = c.id
+        LEFT JOIN car_classes cc ON c.class_id = cc.id
+        WHERE b.status = ?
+    `;
     
-    const bookings = [
-    { id: 1, client_name: 'Иванов Иван', client_phone: '+375-29-123-45-67', client_email: 'ivanov@mail.ru', car_id: 1, start_date: '2024-03-01', end_date: '2024-03-05', status: 'completed' },
-    { id: 2, client_name: 'Петров Петр', client_phone: '+375-33-234-56-78', client_email: 'petrov@gmail.com', car_id: 4, start_date: '2024-03-10', end_date: '2024-03-12', status: 'confirmed' },
-    { id: 3, client_name: 'Сидорова Анна', client_phone: '+375-25-345-67-89', client_email: 'sidorova@yandex.ru', car_id: 5, start_date: '2024-03-15', end_date: '2024-03-20', status: 'confirmed' }
-];
-    
-  const cars = [
-    { id: 1, model: 'Toyota Corolla', class_id: 1, license_plate: '1234 AB-1', year: 2022, color: 'Белый', features: 'Кондиционер, Bluetooth', image: '/images/toyota_corolla.jpg' },
-    { id: 2, model: 'Hyundai Solaris', class_id: 1, license_plate: '5678 BC-1', year: 2021, color: 'Серый', features: 'Кондиционер, парктроник', image: '/images/hyundai_solaris.jpg' },
-    { id: 3, model: 'Kia Rio', class_id: 1, license_plate: '9012 CD-1', year: 2023, color: 'Красный', features: 'Климат-контроль, камера', image: '/images/kia_rio.jpg' },
-    { id: 4, model: 'Volkswagen Passat', class_id: 2, license_plate: '3456 DE-1', year: 2022, color: 'Черный', features: 'Кожаный салон, подогрев сидений', image: '/images/volkswagen_passat.jpg' },
-    { id: 5, model: 'Skoda Octavia', class_id: 2, license_plate: '7890 EF-1', year: 2023, color: 'Синий', features: 'Панорамная крыша, ксенон', image: '/images/skoda_octavia.jpg' },
-    { id: 6, model: 'Toyota Camry', class_id: 2, license_plate: '1234 GH-1', year: 2022, color: 'Белый', features: 'Кожа, климат-контроль', image: '/images/toyota_camry.jpg' },
-    { id: 7, model: 'Mercedes E-Class', class_id: 3, license_plate: '5678 IJ-1', year: 2023, color: 'Черный', features: 'Память сидений, массаж', image: '/images/mercedes_eclass.jpg' },
-    { id: 8, model: 'BMW 5 Series', class_id: 3, license_plate: '9012 KL-1', year: 2022, color: 'Серый', features: 'Парктроник, камера 360', image: '/images/bmw_5series.jpg' },
-    { id: 9, model: 'Audi A6', class_id: 3, license_plate: '3456 MN-1', year: 2023, color: 'Синий', features: 'Полный привод, премиум аудио', image: '/images/audi_a6.jpg' },
-    { id: 10, model: 'Toyota RAV4', class_id: 4, license_plate: '7890 OP-1', year: 2022, color: 'Белый', features: 'Полный привод, круиз-контроль', image: '/images/toyota_rav4.jpg' },
-    { id: 11, model: 'Honda CR-V', class_id: 4, license_plate: '1234 QR-1', year: 2023, color: 'Красный', features: 'Парктроник, камера', image: '/images/honda_crv.jpg' },
-    { id: 12, model: 'Nissan X-Trail', class_id: 4, license_plate: '5678 ST-1', year: 2022, color: 'Черный', features: 'Климат-контроль, подогрев руля', image: '/images/nissan_xtrail.jpg' }
-];
-
-    const carClasses = [
-        { id: 1, name: 'economy', daily_price: 1500, description: 'Бюджетные автомобили для городской езды' },
-        { id: 2, name: 'comfort', daily_price: 2500, description: 'Комфортабельные седаны для поездок' }
-    ];
-    
-    const filteredBookings = bookings.filter(booking => booking.status === status);
-    
-    const result = filteredBookings.map(booking => {
-        const car = cars.find(c => c.id === booking.car_id);
-        const carClass = carClasses.find(cls => cls.id === car.class_id);
+    db.all(query, [status], (err, rows) => {
+        if (err) {
+            console.error('❌ Ошибка БД:', err);
+            return res.status(500).json({ error: err.message });
+        }
         
-        return {
-            ...booking,
-            car_model: car ? car.model : 'Неизвестно',
-            car_license: car ? car.license_plate : 'Неизвестно',
-            class_name: carClass ? carClass.name : 'Неизвестно',
-            daily_price: carClass ? carClass.daily_price : 0
-        };
+        res.json({
+            status: status,
+            bookings: rows,
+            total_count: rows.length
+        });
     });
+});
+
+// 📨 POST: Создание бронирования
+app.post('/api/bookings', (req, res) => {
+    console.log('🎯 POST /api/bookings - ЗАПРОС ПОЛУЧЕН!');
+    console.log('📦 Тело запроса:', JSON.stringify(req.body, null, 2));
     
-    res.json({
-        status: status,
-        bookings: result,
-        total_count: result.length,
-        total_amount: result.reduce((sum, booking) => {
-            const days = Math.ceil((new Date(booking.end_date) - new Date(booking.start_date)) / (1000 * 60 * 60 * 24));
-            return sum + (booking.daily_price * days);
-        }, 0)
+    const { client_name, client_phone, client_email, car_id, start_date, duration } = req.body;
+    
+    // УЛУЧШЕННАЯ ПРОВЕРКА ПОЛЕЙ
+    const missingFields = [];
+    if (!client_name || client_name.trim() === '') missingFields.push('client_name');
+    if (!client_phone || client_phone.trim() === '') missingFields.push('client_phone');
+    if (!client_email || client_email.trim() === '') missingFields.push('client_email');
+    if (!car_id) missingFields.push('car_id');
+    if (!start_date || start_date.trim() === '') missingFields.push('start_date');
+    if (!duration) missingFields.push('duration');
+    
+    if (missingFields.length > 0) {
+        console.error('❌ Отсутствуют поля:', missingFields);
+        return res.status(400).json({ 
+            error: 'Все поля обязательны', 
+            missing_fields: missingFields 
+        });
+    }
+
+    const carId = parseInt(car_id);
+    const durationDays = parseInt(duration);
+
+    if (isNaN(carId)) {
+        return res.status(400).json({ error: 'Неверный формат car_id' });
+    }
+
+    if (isNaN(durationDays) || durationDays < 1) {
+        return res.status(400).json({ error: 'Неверная продолжительность аренды' });
+    }
+
+    // Проверяем существование автомобиля
+    db.get('SELECT id FROM cars WHERE id = ?', [carId], (err, car) => {
+        if (err) {
+            console.error('❌ Ошибка проверки автомобиля:', err);
+            return res.status(500).json({ error: 'Ошибка проверки автомобиля' });
+        }
+        
+        if (!car) {
+            return res.status(404).json({ error: 'Автомобиль не найден' });
+        }
+
+        // Рассчитываем дату окончания
+        const endDate = new Date(start_date);
+        endDate.setDate(endDate.getDate() + durationDays);
+        const end_date = endDate.toISOString().split('T')[0];
+
+        console.log('📅 Даты бронирования:', { start_date, end_date, duration: durationDays });
+
+        // Сохраняем бронирование
+        db.run(
+            `INSERT INTO bookings (client_name, client_phone, client_email, car_id, start_date, end_date, status) 
+             VALUES (?, ?, ?, ?, ?, ?, 'confirmed')`,
+            [client_name.trim(), client_phone.trim(), client_email.trim(), carId, start_date, end_date],
+            function(err) {
+                if (err) {
+                    console.error('❌ Ошибка сохранения бронирования:', err);
+                    return res.status(500).json({ error: 'Ошибка сохранения бронирования: ' + err.message });
+                }
+                
+                console.log('✅ Бронирование создано, ID:', this.lastID);
+                res.status(201).json({ 
+                    id: this.lastID, 
+                    message: 'Бронирование успешно создано',
+                    details: { 
+                        client_name, 
+                        car_id: carId, 
+                        start_date, 
+                        end_date,
+                        duration: durationDays
+                    }
+                });
+            }
+        );
     });
+});
+
+// Главная страница
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'auto.html'));
 });
 
 // Запуск сервера
 app.listen(PORT, () => {
-  console.log('🚗 Сервер запущен!');
-  console.log('📄 Открой в браузере: http://localhost:3000/auto.html');
-  console.log('📊 API тест 1: http://localhost:3000/api/cars-by-class/1');
-  console.log('📊 API тест 2: http://localhost:3000/api/bookings-by-status/confirmed');
-});// Проект завершен
+    console.log('🚀 СЕРВЕР ЗАПУЩЕН!');
+    console.log('📍 http://localhost:3000');
+    console.log('🎯 БАЗА ДАННЫХ РАБОТАЕТ!');
+});
