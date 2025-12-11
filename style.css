@@ -7,6 +7,7 @@
     --success-color: #2ecc71;
     --warning-color: #f39c12;
     --danger-color: #e74c3c;
+    --info-color: #17a2b8;
 }
 
 * {
@@ -149,6 +150,36 @@ button:hover {
     background-color: #2c3e50;
 }
 
+.btn-success {
+    background-color: var(--success-color) !important;
+}
+
+.btn-success:hover {
+    background-color: #27ae60 !important;
+}
+
+.btn-danger {
+    background-color: var(--danger-color) !important;
+}
+
+.btn-danger:hover {
+    background-color: #c0392b !important;
+}
+
+.btn-info {
+    background-color: var(--info-color) !important;
+}
+
+.btn-info:hover {
+    background-color: #138496 !important;
+}
+
+.btn-small {
+    width: auto;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
 /* Utility Classes */
 .hidden {
     display: none !important;
@@ -156,6 +187,13 @@ button:hover {
 
 .text-center {
     text-align: center;
+}
+
+.hint {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: #666;
 }
 
 /* Search Results */
@@ -178,7 +216,7 @@ button:hover {
 .car-info {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .car-details h4 {
@@ -186,40 +224,45 @@ button:hover {
     color: var(--primary-color);
 }
 
+.car-details p {
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
 .car-price {
-    font-size: 1.2rem;
+    text-align: right;
+    min-width: 200px;
+}
+
+.car-price .daily-price {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.total-price {
+    font-size: 1.5rem;
     font-weight: bold;
     color: var(--secondary-color);
+    margin-bottom: 0.5rem;
 }
 
 .book-btn {
     width: auto;
-    padding: 0.5rem 1rem;
-}
-
-/* Alternative Options */
-.alternative-option {
-    background-color: #fff9e6;
-    border: 1px solid var(--warning-color);
-    border-radius: 6px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-}
-
-.alternative-option h5 {
-    color: var(--warning-color);
-    margin-bottom: 0.5rem;
+    padding: 0.5rem 1.5rem;
+    font-weight: bold;
 }
 
 /* Table Styles */
 .table-container {
     overflow-x: auto;
+    margin-top: 1rem;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 1rem;
 }
 
 th, td {
@@ -231,20 +274,40 @@ th, td {
 th {
     background-color: var(--light-color);
     font-weight: 600;
+    color: var(--primary-color);
 }
 
 tr:hover {
-    background-color: #f5f5f5;
+    background-color: #f9f9f9;
 }
 
+tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* Status Styles */
 .status-confirmed {
     color: var(--success-color);
     font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
 
-.status-pending {
+.status-waiting {
     color: var(--warning-color);
     font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-rejected {
+    color: var(--danger-color);
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
 
 /* Cars Grid */
@@ -324,6 +387,7 @@ tr:hover {
 .car-features li {
     padding: 0.25rem 0;
     color: #666;
+    font-size: 0.9rem;
 }
 
 .car-availability {
@@ -350,337 +414,186 @@ tr:hover {
     color: var(--primary-color);
 }
 
-/* Footer */
-footer {
-    background-color: var(--dark-color);
-    color: white;
-    text-align: center;
-    padding: 1rem 0;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .header-content {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    nav ul {
-        margin-top: 1rem;
-        justify-content: center;
-    }
-    
-    nav ul li {
-        margin: 0 0.5rem;
-    }
-    
-    .form-row {
-        flex-direction: column;
-    }
-    
-    .car-info {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .book-btn {
-        margin-top: 1rem;
-        width: 100%;
-    }
-    
-    .cars-grid {
-        grid-template-columns: 1fr;
-    }
-}:root {
-    --primary-color: #2c3e50;
-    --secondary-color: #3498db;
-    --accent-color: #e74c3c;
-    --light-color: #ecf0f1;
-    --dark-color: #34495e;
-    --success-color: #2ecc71;
-    --warning-color: #f39c12;
-    --danger-color: #e74c3c;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-body {
-    background-color: #f5f7fa;
-    color: var(--dark-color);
-    line-height: 1.6;
-}
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-/* Header Styles */
-header {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 1rem 0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.logo {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: white;
-}
-
-nav ul {
-    display: flex;
-    list-style: none;
-}
-
-nav ul li {
-    margin-left: 1.5rem;
-}
-
-nav ul li a {
-    color: white;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    transition: background-color 0.3s;
-}
-
-nav ul li a:hover, 
-nav ul li a.active {
-    background-color: var(--secondary-color);
-}
-
-/* Main Content */
-main {
-    padding: 2rem 0;
-    min-height: calc(100vh - 140px);
-}
-
-.section {
-    display: none;
-}
-
-.section.active {
-    display: block;
-}
-
-.section-title {
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--secondary-color);
-    color: var(--primary-color);
-}
-
-/* Card Styles */
-.card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-/* Form Styles */
-.form-group {
-    margin-bottom: 1rem;
-}
-
-.form-row {
-    display: flex;
-    gap: 1rem;
-}
-
-.form-row .form-group {
-    flex: 1;
-}
-
-label {
-    display: block;
+.booking-summary p {
     margin-bottom: 0.5rem;
-    font-weight: 600;
-}
-
-input, select, button {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
     font-size: 1rem;
 }
 
-button {
-    background-color: var(--secondary-color);
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    font-weight: 600;
+/* Стили для формы подтверждения кода */
+.confirmation-info {
+    background: #e8f4fd;
+    border: 1px solid #3498db;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
 }
 
-button:hover {
-    background-color: #2980b9;
-}
-
-.btn-secondary {
-    background-color: var(--dark-color);
-}
-
-.btn-secondary:hover {
-    background-color: #2c3e50;
-}
-
-/* Utility Classes */
-.hidden {
-    display: none !important;
-}
-
-.text-center {
-    text-align: center;
-}
-
-/* Search Results */
-.car-option {
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    background-color: #f9f9f9;
-}
-
-.car-option.available {
-    border-left: 4px solid var(--success-color);
-}
-
-.car-option.unavailable {
-    border-left: 4px solid var(--danger-color);
-}
-
-.car-info {
+.info-item {
+    margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.car-details h4 {
-    margin-bottom: 0.5rem;
-    color: var(--primary-color);
+.info-item:last-child {
+    margin-bottom: 0;
 }
 
-.car-price {
-    font-size: 1.2rem;
+.timer {
     font-weight: bold;
-    color: var(--secondary-color);
+    color: #27ae60;
+    font-size: 18px;
+    font-family: 'Courier New', monospace;
 }
 
-.book-btn {
-    width: auto;
-    padding: 0.5rem 1rem;
+.timer.warning {
+    color: #f39c12;
 }
 
-/* Alternative Options */
-.alternative-option {
-    background-color: #fff9e6;
-    border: 1px solid var(--warning-color);
-    border-radius: 6px;
-    padding: 1rem;
-    margin-bottom: 1rem;
+.timer.danger {
+    color: #e74c3c;
 }
 
-.alternative-option h5 {
-    color: var(--warning-color);
-    margin-bottom: 0.5rem;
-}
-
-/* Table Styles */
-.table-container {
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
-}
-
-th, td {
-    padding: 0.75rem;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-th {
-    background-color: var(--light-color);
-    font-weight: 600;
-}
-
-tr:hover {
-    background-color: #f5f5f5;
-}
-
-.status-confirmed {
-    color: var(--success-color);
+/* Стили для кода подтверждения */
+#confirmation-code {
+    font-family: 'Courier New', monospace;
     font-weight: bold;
+    text-transform: uppercase;
+    font-size: 18px;
+    text-align: center;
+    letter-spacing: 3px;
+    background-color: #f8f9fa;
+    border: 2px solid #ddd;
 }
 
-.status-pending {
-    color: var(--warning-color);
-    font-weight: bold;
-}
-
-/* Cars Grid */
-.cars-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1rem;
-}
-
-.car-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden;
-    background: white;
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.car-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-
-.car-image {
-    height: 200px;
-    background-color: #eee;
+/* Группа кнопок */
+.button-group {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #777;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
 }
 
-.car-content {
-    padding: 1rem;
+.button-group button {
+    flex: 1;
+    min-width: 150px;
 }
 
+/* Блок с заметкой о email */
+.email-note {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.email-note ul {
+    margin: 10px 0 0 20px;
+}
+
+.email-note li {
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+/* Но-карс сообщение */
+.no-cars {
+    text-align: center;
+    color: var(--danger-color);
+    font-style: italic;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin: 1rem 0;
+}
+
+/* Отчеты */
+.report-summary {
+    background: #e8f9fa;
+    border: 1px solid #17a2b8;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.report-summary h4 {
+    margin-top: 0;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 6px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.stat-card h5 {
+    margin: 0 0 10px 0;
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: normal;
+}
+
+.stat-card p {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.stat-card.total {
+    border-top: 4px solid var(--primary-color);
+}
+
+.stat-card.confirmed {
+    border-top: 4px solid var(--success-color);
+}
+
+.stat-card.confirmed p {
+    color: var(--success-color);
+}
+
+.stat-card.waiting {
+    border-top: 4px solid var(--warning-color);
+}
+
+.stat-card.waiting p {
+    color: var(--warning-color);
+}
+
+.stat-card.rejected {
+    border-top: 4px solid var(--danger-color);
+}
+
+.stat-card.rejected p {
+    color: var(--danger-color);
+}
+
+.stat-card.revenue {
+    border-top: 4px solid var(--info-color);
+}
+
+.stat-card.revenue p {
+    color: var(--info-color);
+}
+
+/* Классы автомобилей в отчете */
 .car-class {
     display: inline-block;
-    padding: 0.25rem 0.5rem;
-    background-color: var(--light-color);
+    padding: 3px 8px;
     border-radius: 4px;
-    font-size: 0.8rem;
-    margin-bottom: 0.5rem;
+    font-size: 12px;
+    font-weight: bold;
+    margin-right: 5px;
 }
 
 .car-class.economy {
@@ -703,44 +616,78 @@ tr:hover {
     color: #856404;
 }
 
-.car-model {
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
-    color: var(--primary-color);
+/* Новые стили для улучшенных отчетов */
+.report-badge {
+    display: inline-block;
+    background: #e8f4fd;
+    border: 1px solid #3498db;
+    border-radius: 4px;
+    padding: 5px 10px;
+    margin-left: 10px;
+    font-size: 0.9rem;
+    color: #2c3e50;
 }
 
-.car-features {
-    list-style: none;
-    margin-bottom: 1rem;
-}
-
-.car-features li {
-    padding: 0.25rem 0;
+.report-badge small {
     color: #666;
+    font-size: 0.8rem;
 }
 
-.car-availability {
+#report-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 15px;
 }
 
-.available-count {
-    font-weight: bold;
-    color: var(--success-color);
+#report-header h3 {
+    margin: 0;
 }
 
-/* Booking Summary */
-.booking-summary {
-    background-color: var(--light-color);
-    padding: 1rem;
+.monthly-stats {
+    margin-top: 20px;
+    background: white;
     border-radius: 6px;
-    margin-bottom: 1rem;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-.booking-summary h4 {
-    margin-bottom: 0.5rem;
+.monthly-stats h5 {
+    margin: 0 0 10px 0;
     color: var(--primary-color);
+}
+
+.monthly-stats table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+.monthly-stats th {
+    background: #f8f9fa;
+    padding: 10px;
+    text-align: left;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.monthly-stats td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.monthly-stats tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+.monthly-stats tr:hover {
+    background: #f0f8ff;
+}
+
+.monthly-stats tr:last-child td {
+    border-bottom: none;
 }
 
 /* Footer */
@@ -749,6 +696,15 @@ footer {
     color: white;
     text-align: center;
     padding: 1rem 0;
+    margin-top: 2rem;
+}
+
+footer p {
+    margin: 0.5rem 0;
+}
+
+footer p:first-child {
+    font-weight: bold;
 }
 
 /* Responsive Design */
@@ -761,10 +717,11 @@ footer {
     nav ul {
         margin-top: 1rem;
         justify-content: center;
+        flex-wrap: wrap;
     }
     
     nav ul li {
-        margin: 0 0.5rem;
+        margin: 0.25rem;
     }
     
     .form-row {
@@ -776,12 +733,472 @@ footer {
         align-items: flex-start;
     }
     
-    .book-btn {
+    .car-price {
+        text-align: left;
         margin-top: 1rem;
+        width: 100%;
+    }
+    
+    .book-btn {
         width: 100%;
     }
     
     .cars-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .button-group button {
+        width: 100%;
+        min-width: 100%;
+    }
+    
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .info-item strong {
+        margin-bottom: 0.25rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    table {
+        font-size: 0.9rem;
+    }
+    
+    th, td {
+        padding: 0.5rem;
+    }
+    
+    #report-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .report-badge {
+        margin: 10px 0 0 0;
+    }
+    
+    .monthly-stats table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+    }
+    
+    .card {
+        padding: 1rem;
+    }
+    
+    .report-summary {
+        padding: 10px;
+    }
+    
+    .stat-card {
+        padding: 10px;
+    }
+    
+    .stat-card h5 {
+        font-size: 0.8rem;
+    }
+    
+    .stat-card p {
+        font-size: 1.2rem;
+    }
+    
+    .monthly-stats {
+        padding: 10px;
+    }
+    
+    .monthly-stats th,
+    .monthly-stats td {
+        padding: 8px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.section.active {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.card {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Загрузка и статусы */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0,0,0,.1);
+    border-radius: 50%;
+    border-top-color: var(--secondary-color);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.success-message {
+    background-color: var(--success-color);
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.error-message {
+    background-color: var(--danger-color);
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Дополнительные стили для фильтров */
+.filter-tags {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+}
+
+.filter-tag {
+    background: #e8f4fd;
+    border: 1px solid #3498db;
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filter-tag .remove {
+    cursor: pointer;
+    color: #666;
+    font-weight: bold;
+}
+
+.filter-tag .remove:hover {
+    color: var(--danger-color);
+}
+
+/* Стили для подсказок */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: var(--dark-color);
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.9rem;
+    font-weight: normal;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Стили для переключателей вкладок */
+.tab-nav {
+    display: flex;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 20px;
+}
+
+.tab-nav button {
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #666;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.tab-nav button:hover {
+    color: var(--secondary-color);
+}
+
+.tab-nav button.active {
+    color: var(--secondary-color);
+    border-bottom-color: var(--secondary-color);
+    font-weight: bold;
+}
+
+/* Стили для карточек автомобилей в результатах поиска */
+.car-option .availability-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.car-option.available .availability-indicator {
+    background-color: var(--success-color);
+}
+
+.car-option.unavailable .availability-indicator {
+    background-color: var(--danger-color);
+}
+
+.car-option .availability-text {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Стили для дат в таблице */
+.date-cell {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+/* Стили для кнопок действий */
+.action-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.action-btn {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    border-radius: 3px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.action-btn.view {
+    background-color: var(--info-color);
+    color: white;
+}
+
+.action-btn.edit {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.action-btn.delete {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.action-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* Стили для счетчика автомобилей */
+.car-count-badge {
+    display: inline-block;
+    background: var(--secondary-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+/* Стили для отступов */
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+
+.ml-1 { margin-left: 0.5rem; }
+.ml-2 { margin-left: 1rem; }
+.ml-3 { margin-left: 1.5rem; }
+
+.mr-1 { margin-right: 0.5rem; }
+.mr-2 { margin-right: 1rem; }
+.mr-3 { margin-right: 1.5rem; }
+
+.p-1 { padding: 0.5rem; }
+.p-2 { padding: 1rem; }
+.p-3 { padding: 1.5rem; }
+.p-4 { padding: 2rem; }
+
+/* Стили для flex контейнеров */
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.flex-row {
+    flex-direction: row;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.align-center {
+    align-items: center;
+}
+
+.align-start {
+    align-items: flex-start;
+}
+
+.align-end {
+    align-items: flex-end;
+}
+
+.gap-1 { gap: 0.5rem; }
+.gap-2 { gap: 1rem; }
+.gap-3 { gap: 1.5rem; }
+.gap-4 { gap: 2rem; }
+
+/* Стили для сетки */
+.grid {
+    display: grid;
+}
+
+.grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-cols-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* Стили для текста */
+.text-sm { font-size: 0.9rem; }
+.text-md { font-size: 1rem; }
+.text-lg { font-size: 1.2rem; }
+.text-xl { font-size: 1.5rem; }
+
+.text-bold { font-weight: bold; }
+.text-light { font-weight: 300; }
+.text-normal { font-weight: normal; }
+
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--secondary-color); }
+.text-success { color: var(--success-color); }
+.text-danger { color: var(--danger-color); }
+.text-warning { color: var(--warning-color); }
+.text-info { color: var(--info-color); }
+
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+/* Стили для иконок */
+.icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.icon-small {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-large {
+    width: 24px;
+    height: 24px;
+}
+
+/* Стили для скроллбара */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Стили для печати */
+@media print {
+    header, footer, nav, .button-group, .reports-filter {
+        display: none !important;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    table {
+        page-break-inside: auto;
+    }
+    
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
     }
 }
