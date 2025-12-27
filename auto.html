@@ -7,263 +7,484 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">Автопрокат</div>
-                <nav>
-                    <ul>
-                        <li><a href="#" class="nav-link active" data-section="booking">Бронирование</a></li>
-                        <li><a href="#" class="nav-link" data-section="confirmed-reports">Все бронирования</a></li>
-                        <li><a href="#" class="nav-link" data-section="available-cars">Свободные автомобили</a></li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
-    </header>
-
-    <main>
-        <div class="container">
-            <!-- Секция бронирования -->
-            <section id="booking" class="section active">
-                <h2 class="section-title">Бронирование автомобиля</h2>
-                
-                <div class="card">
-                    <form id="booking-form">
-                        <div class="form-group">
-                            <label for="car-class">Класс автомобиля:</label>
-                            <select id="car-class" required>
-                                <option value="">Выберите класс</option>
-                                <option value="economy">Эконом (от 80 BYN/день)</option>
-                                <option value="comfort">Комфорт (от 120 BYN/день)</option>
-                                <option value="business">Бизнес (от 200 BYN/день)</option>
-                                <option value="suv">Внедорожник (от 150 BYN/день)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="start-date">Дата начала аренды:</label>
-                            <input type="date" id="start-date" required>
-                            <small class="hint">Можно забронировать только через 30 дней от сегодняшней даты</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="rental-duration">Продолжительность проката (дни):</label>
-                            <input type="number" id="rental-duration" min="1" value="1" required>
-                            <small class="hint">Минимум 1 день, максимум не ограничен</small>
-                        </div>
-                        
-                        <button type="submit">Найти автомобиль</button>
-                    </form>
-                </div>
-
-                <!-- Результаты поиска -->
-                <div id="search-results" class="card hidden">
-                    <h3>Результаты поиска</h3>
-                    <div id="available-cars-list">
-                        <!-- Автомобили будут добавлены через JavaScript -->
-                    </div>
-                </div>
-
-                <!-- Форма данных клиента -->
-                <div id="confirmation-form" class="card hidden">
-                    <h3>Данные для бронирования</h3>
-                    <form id="confirm-booking">
-                        <div class="form-group">
-                            <label for="client-name">ФИО клиента:</label>
-                            <input type="text" id="client-name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="client-phone">Телефон:</label>
-                            <input type="tel" id="client-phone" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="client-email">Email:</label>
-                            <input type="email" id="client-email" required>
-                            <small class="hint">На этот email будет отправлен код подтверждения</small>
-                        </div>
-                        <div class="booking-summary">
-                            <h4>Детали бронирования:</h4>
-                            <p id="summary-car"></p>
-                            <p id="summary-period"></p>
-                        </div>
-                        <button type="submit">Отправить заявку на бронирование</button>
-                    </form>
-                </div>
-
-                <!-- Форма ввода кода подтверждения -->
-                <div id="confirmation-code-form" class="card hidden">
-                    <h3>🔐 Подтверждение бронирования</h3>
-                    
-                    <div class="confirmation-info">
-                        <div class="info-item">
-                            <strong>ID бронирования:</strong> 
-                            <span id="confirmation-booking-id">-</span>
-                        </div>
-                        <div class="info-item">
-                            <strong>⏰ Осталось времени:</strong> 
-                            <span id="confirmation-timer" class="timer">05:00</span>
-                        </div>
-                    </div>
-                    
-                    <form id="confirmation-code-form-inner">
-                        <div class="form-group">
-                            <label for="confirmation-code">Код подтверждения из email:</label>
-                            <input type="text" id="confirmation-code" 
-                                   placeholder="Введите 6-значный код" 
-                                   maxlength="6"
-                                   style="text-transform: uppercase; font-size: 18px; text-align: center; letter-spacing: 3px;"
-                                   required>
-                            <small class="hint">Проверьте вашу почту и введите код из письма</small>
-                        </div>
-                        
-                        <div class="button-group">
-                            <button type="submit" class="btn-success">✅ Подтвердить бронирование</button>
-                            <button type="button" onclick="resetBookingFlow()" class="btn-secondary">❌ Отмена</button>
-                        </div>
-                    </form>
-                    
-                    <div class="email-note">
-                        <p>📧 <strong>Важно:</strong> Если вы не получили письмо:</p>
+    <!-- Стартовая страница выбора роли -->
+    <div id="start-page" class="start-page active">
+        <div class="start-container">
+            <h1 class="start-title">🚗 Автопрокат</h1>
+            <p class="start-subtitle">Система бронирования автомобилей</p>
+            
+            <div class="role-selection">
+                <!-- Роль: Гость -->
+                <div class="role-card guest">
+                    <span class="role-icon">👤</span>
+                    <h2 class="role-title">Гость</h2>
+                    <p class="role-description">
+                        Просмотр свободных автомобилей без возможности бронирования
+                    </p>
+                    <div class="role-features">
                         <ul>
-                            <li>Проверьте папку "Спам"</li>
-                            <li>Убедитесь, что email указан правильно</li>
-                            <li>Код действителен в течение 5 минут</li>
-                            <li>Письмо отправляется с адреса: confirmationsc94@gmail.com</li>
+                            <li>Просмотр всех автомобилей</li>
+                            <li>Проверка доступности на дату</li>
+                            <li>Без регистрации</li>
+                            <li>Можно зарегистрироваться позже</li>
                         </ul>
                     </div>
+                    <button class="btn-info" onclick="selectRole('guest')" style="width: 100%; margin-top: 20px;">
+                        Продолжить как гость
+                    </button>
                 </div>
-            </section>
-
-            <!-- Секция всех бронирований -->
-            <section id="confirmed-reports" class="section">
-                <h2 class="section-title">Все бронирования</h2>
                 
-                <!-- Блок быстрых отчетов -->
-                <div class="card">
-                    <h3>Быстрые отчеты</h3>
-                    <div class="button-group">
-                        <button type="button" onclick="loadAnnualReport()" class="btn-info">📊 Годовой отчет</button>
-                        <button type="button" onclick="loadCurrentMonthReport()" class="btn-info">📅 Текущий месяц</button>
-                        <button type="button" onclick="loadWaitingBookings()" class="btn-info">⏳ В ожидании</button>
-                        <button type="button" onclick="loadConfirmedBookings()" class="btn-info">✅ Подтвержденные</button>
+                <!-- Роль: Пользователь -->
+                <div class="role-card user">
+                    <span class="role-icon">👥</span>
+                    <h2 class="role-title">Пользователь</h2>
+                    <p class="role-description">
+                        Бронирование автомобилей и управление своими заказами
+                    </p>
+                    <div class="role-features">
+                        <ul>
+                            <li>Все возможности гостя</li>
+                            <li>Бронирование автомобилей</li>
+                            <li>Просмотр своих бронирований</li>
+                            <li>Подтверждение по email</li>
+                        </ul>
+                    </div>
+                    <button class="btn-success" onclick="selectRole('user')" style="width: 100%; margin-top: 20px;">
+                        Войти как пользователь
+                    </button>
+                </div>
+                
+                <!-- Роль: Администратор -->
+                <div class="role-card admin">
+                    <span class="role-icon">👑</span>
+                    <h2 class="role-title">Администратор</h2>
+                    <p class="role-description">
+                        Полный доступ к управлению системой и просмотру отчетов
+                    </p>
+                    <div class="role-features">
+                        <ul>
+                            <li>Все возможности пользователя</li>
+                            <li>Полные отчеты</li>
+                            <li>Управление автомобилями</li>
+                            <li>Управление бронированиями</li>
+                        </ul>
+                    </div>
+                    <button class="btn-danger" onclick="selectRole('admin')" style="width: 100%; margin-top: 20px;">
+                        Войти как администратор
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Основной интерфейс -->
+    <div id="main-interface" class="main-interface">
+        <header>
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo"> Автопрокат</div>
+                
+                
+                    <div class="auth-panel">
+                        <div id="auth-buttons" style="display: none;">
+                            <!-- Кнопки для гостя -->
+                            <button onclick="showLoginModal()" class="btn-success">Войти</button>
+                            <button onclick="showRegisterModal()" class="btn-secondary">Регистрация</button>
+                        </div>
+                        <div id="user-info" class="user-info" style="display: none;">
+                            <span id="user-name"></span>
+                            <span id="user-role-badge" class="user-role-badge"></span>
+                            <button onclick="logout()" class="btn-small btn-danger">Выйти</button>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="card">
-                    <h3>Фильтры для отчета</h3>
-                    <form id="reports-filter">
-                        <div class="form-row">
+            </div>
+        </header>
+
+        <main>
+            <div class="container">
+                <!-- Секция свободных автомобилей -->
+                <section id="available-cars" class="section active">
+                    <h2 class="section-title">Свободные автомобили</h2>
+                    
+                    <div id="guest-notice" class="guest-notice" style="display: none;">
+                         Вы вошли как гость. Для бронирования автомобилей необходимо <a href="#" onclick="showLoginModal()" style="color: var(--info-color); text-decoration: underline;">войти</a> или <a href="#" onclick="showRegisterModal()" style="color: var(--info-color); text-decoration: underline;">зарегистрироваться</a>
+                    </div>
+                    
+                    <div class="card">
+                        <form id="availability-check">
                             <div class="form-group">
-                                <label for="report-month">Месяц:</label>
-                                <select id="report-month">
-                                    <option value="">Все месяцы</option>
-                                    <option value="1">Январь</option>
-                                    <option value="2">Февраль</option>
-                                    <option value="3">Март</option>
-                                    <option value="4">Апрель</option>
-                                    <option value="5">Май</option>
-                                    <option value="6">Июнь</option>
-                                    <option value="7">Июль</option>
-                                    <option value="8">Август</option>
-                                    <option value="9">Сентябрь</option>
-                                    <option value="10">Октябрь</option>
-                                    <option value="11">Ноябрь</option>
-                                    <option value="12">Декабрь</option>
+                                <label for="check-date">Дата проверки:</label>
+                                <input type="date" id="check-date" required>
+                            </div>
+                            <button type="submit">Проверить доступность</button>
+                        </form>
+                    </div>
+
+                    <div id="availability-results" class="card hidden">
+                        <h3>Доступные автомобили</h3>
+                        <div class="cars-grid">
+                            <!-- Карточки автомобилей будут добавляться через JavaScript -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Секция бронирования -->
+                <section id="booking" class="section">
+                    <h2 class="section-title">Бронирование автомобиля</h2>
+                    
+                    <div id="booking-notice" class="guest-notice" style="display: none;">
+                        Для бронирования необходимо использовать данные из вашего профиля
+                    </div>
+                    
+                    <div class="card">
+                        <form id="booking-form">
+                            <div class="form-group">
+                                <label for="car-class">Класс автомобиля:</label>
+                                <select id="car-class" required>
+                                    <option value="">Выберите класс</option>
+                                    <option value="economy">Эконом (от 80 BYN/день)</option>
+                                    <option value="comfort">Комфорт (от 120 BYN/день)</option>
+                                    <option value="business">Бизнес (от 200 BYN/день)</option>
+                                    <option value="suv">Внедорожник (от 150 BYN/день)</option>
                                 </select>
                             </div>
+                            
                             <div class="form-group">
-                                <label for="report-year">Год:</label>
-                                <input type="number" id="report-year" min="2024" max="2030" placeholder="Все года">
+                                <label for="start-date">Дата начала аренды:</label>
+                                <input type="date" id="start-date" required>
+                                <small class="hint">Можно забронировать только через 30 дней от сегодняшней даты</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="rental-duration">Продолжительность проката (дни):</label>
+                                <input type="number" id="rental-duration" min="1" value="1" required>
+                                <small class="hint">Минимум 1 день, максимум не ограничен</small>
+                            </div>
+                            
+                            <button type="submit" id="search-cars-btn">Найти автомобиль</button>
+                            <button type="button" onclick="autofillUserData()" class="btn-small btn-info" id="autofill-btn" style="margin-top: 10px; display: none;">
+                                Заполнить моими данными
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Результаты поиска -->
+                    <div id="search-results" class="card hidden">
+                        <h3>Результаты поиска</h3>
+                        <div id="available-cars-list">
+                            <!-- Автомобили будут добавлены через JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Форма данных клиента -->
+                    <div id="confirmation-form" class="card hidden">
+                        <h3>Данные для бронирования</h3>
+                        <form id="confirm-booking">
+                            <div class="form-group">
+                                <label for="client-name">ФИО клиента:</label>
+                                <input type="text" id="client-name" required>
+                                <small class="hint" id="name-hint">Должно совпадать с именем из вашего профиля</small>
                             </div>
                             <div class="form-group">
-                                <label for="report-status">Статус:</label>
-                                <select id="report-status">
-                                    <option value="all">Все статусы</option>
-                                    <option value="confirmed">Подтверждено</option>
-                                    <option value="waiting">В ожидании</option>
-                                    <option value="rejected">Отклонено</option>
-                                </select>
+                                <label for="client-phone">Телефон:</label>
+                                <input type="tel" id="client-phone" required>
+                                <small class="hint" id="phone-hint">Должен совпадать с телефоном из вашего профиля</small>
                             </div>
                             <div class="form-group">
-                                <label for="report-car-class">Класс авто:</label>
-                                <select id="report-car-class">
-                                    <option value="all">Все классы</option>
-                                    <option value="economy">Эконом</option>
-                                    <option value="comfort">Комфорт</option>
-                                    <option value="business">Бизнес</option>
-                                    <option value="suv">Внедорожник</option>
-                                </select>
+                                <label for="client-email">Email:</label>
+                                <input type="email" id="client-email" required>
+                                <small class="hint" id="email-hint">Должен совпадать с email из вашего профиля</small>
+                            </div>
+                            <div class="booking-summary">
+                                <h4>Детали бронирования:</h4>
+                                <p id="summary-car"></p>
+                                <p id="summary-period"></p>
+                            </div>
+                            <div class="button-group">
+                                <button type="submit" class="btn-success">Отправить заявку на бронирование</button>
+                                <button type="button" onclick="checkUserData()" class="btn-small btn-info">Проверить данные</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Форма ввода кода подтверждения -->
+                    <div id="confirmation-code-form" class="card hidden">
+                        <h3>Подтверждение бронирования</h3>
+                        
+                        <div class="confirmation-info">
+                            <div class="info-item">
+                                <strong>ID бронирования:</strong> 
+                                <span id="confirmation-booking-id">-</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Осталось времени:</strong> 
+                                <span id="confirmation-timer" class="timer">05:00</span>
                             </div>
                         </div>
+                        
+                        <form id="confirmation-code-form-inner">
+                            <div class="form-group">
+                                <label for="confirmation-code">Код подтверждения из email:</label>
+                                <input type="text" id="confirmation-code" 
+                                       placeholder="Введите 6-значный код" 
+                                       maxlength="6"
+                                       style="text-transform: uppercase; font-size: 18px; text-align: center; letter-spacing: 3px;"
+                                       required>
+                                <small class="hint">Проверьте вашу почту и введите код из письма</small>
+                            </div>
+                            
+                            <div class="button-group">
+                                <button type="submit" class="btn-success">Подтвердить бронирование</button>
+                                <button type="button" onclick="resetBookingFlow()" class="btn-secondary">Отмена</button>
+                            </div>
+                        </form>
+                        
+                        <div class="email-note">
+                            <p><strong>Важно:</strong> Если вы не получили письмо:</p>
+                            <ul>
+                                <li>Проверьте папку "Спам"</li>
+                                <li>Убедитесь, что email указан правильно</li>
+                                <li>Код действителен в течение 5 минут</li>
+                                <li>Письмо отправляется с адреса: confirmationsc94@gmail.com</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Секция моих бронирований -->
+                <section id="my-bookings" class="section">
+                    <h2 class="section-title">Мои бронирования</h2>
+                    
+                </section>
+
+                <!-- Секция отчетов (только для админа) -->
+                <section id="reports" class="section">
+                    <h2 class="section-title">Отчеты по бронированиям</h2>
+                    
+                    <div class="card">
+                        <h3>Фильтры для отчета</h3>
+                        <form id="reports-filter">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="report-month">Месяц:</label>
+                                    <select id="report-month">
+                                        <option value="">Все месяцы</option>
+                                        <option value="1">Январь</option>
+                                        <option value="2">Февраль</option>
+                                        <option value="3">Март</option>
+                                        <option value="4">Апрель</option>
+                                        <option value="5">Май</option>
+                                        <option value="6">Июнь</option>
+                                        <option value="7">Июль</option>
+                                        <option value="8">Август</option>
+                                        <option value="9">Сентябрь</option>
+                                        <option value="10">Октябрь</option>
+                                        <option value="11">Ноябрь</option>
+                                        <option value="12">Декабрь</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="report-year">Год:</label>
+                                    <input type="number" id="report-year" min="2024" max="2030" placeholder="Все года">
+                                </div>
+                                <div class="form-group">
+                                    <label for="report-status">Статус:</label>
+                                    <select id="report-status">
+                                        <option value="all">Все статусы</option>
+                                        <option value="confirmed">Подтверждено</option>
+                                        <option value="waiting">В ожидании</option>
+                                        <option value="rejected">Отклонено</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="report-car-class">Класс авто:</label>
+                                    <select id="report-car-class">
+                                        <option value="all">Все классы</option>
+                                        <option value="economy">Эконом</option>
+                                        <option value="comfort">Комфорт</option>
+                                        <option value="business">Бизнес</option>
+                                        <option value="suv">Внедорожник</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="button-group">
+                                <button type="submit" class="btn-success">Сформировать отчет</button>
+                                <button type="button" onclick="loadAnnualReport()" class="btn-info">Годовой отчет</button>
+                                <button type="button" onclick="clearAllBookings()" class="btn-danger" id="clear-all-btn">Очистить все бронирования</button>
+                            </div>
+                            <small class="hint">Оставьте поле пустым, чтобы увидеть все записи</small>
+                        </form>
+                    </div>
+
+                    <div id="reports-results" class="card">
+                        <div id="report-header">
+                            <h3>Список бронирований</h3>
+                            <div id="report-type-badge"></div>
+                        </div>
+                        <div id="reports-summary">
+                            <!-- Статистика будет добавлена через JavaScript -->
+                        </div>
+                        <div class="table-container">
+                            <table id="bookings-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Клиент</th>
+                                        <th>Автомобиль</th>
+                                        <th>Период аренды</th>
+                                        <th>Сумма</th>
+                                        <th>Дата создания</th>
+                                        <th>Статус</th>
+                                        <th id="actions-header">Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Данные будут заполняться через JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Секция управления автомобилями (только для админа) -->
+                <section id="admin-cars" class="section">
+                    <h2 class="section-title">Управление автомобилями</h2>
+                    
+                    <div class="card">
                         <div class="button-group">
-                            <button type="submit" class="btn-success">Сформировать отчет</button>
-                            <button type="button" onclick="clearAllBookings()" class="btn-danger">🗑️ Очистить все бронирования</button>
+                            <button class="btn-success" onclick="showAddCarModal()">Добавить автомобиль</button>
                         </div>
-                        <small class="hint">Оставьте поле пустым, чтобы увидеть все записи</small>
-                    </form>
-                </div>
+                    </div>
 
-                <div id="reports-results" class="card">
-                    <div id="report-header">
-                        <h3>Список бронирований</h3>
-                        <div id="report-type-badge"></div>
+                    <div id="admin-cars-container" class="card">
+                        <p>Загрузка автомобилей...</p>
                     </div>
-                    <div id="reports-summary">
-                        <!-- Статистика будет добавлена через JavaScript -->
-                    </div>
-                    <div class="table-container">
-                        <table id="bookings-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Клиент</th>
-                                    <th>Автомобиль</th>
-                                    <th>Период аренды</th>
-                                    <th>Сумма</th>
-                                    <th>Дата создания</th>
-                                    <th>Статус</th>
-                                    <th>Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Данные будут заполняться через JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
+                </section>
+            </div>
+        </main>
 
-            <!-- Секция свободных автомобилей -->
-            <section id="available-cars" class="section">
-                <h2 class="section-title">Свободные автомобили</h2>
-                
-                <div class="card">
-                    <form id="availability-check">
-                        <div class="form-group">
-                            <label for="check-date">Дата проверки:</label>
-                            <input type="date" id="check-date" required>
-                        </div>
-                        <button type="submit">Проверить доступность</button>
-                    </form>
-                </div>
+        <footer>
+            <div class="container">
+                <p>&copy; 2025 Автопрокат. Все права защищены.</p>
+                <button onclick="switchToStartPage()" class="btn-small btn-secondary" style="margin-top: 10px;">Сменить роль</button>
+            </div>
+        </footer>
+    </div>
 
-                <div id="availability-results" class="card">
-                    <h3>Доступные автомобили</h3>
-                    <div class="cars-grid">
-                        <!-- Карточки автомобилей будут добавляться через JavaScript -->
-                    </div>
+    <!-- Модальные окна -->
+    <div id="login-modal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Вход в систему</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email:</label>
+                    <input type="email" id="login-email" required>
                 </div>
-            </section>
+                <div class="form-group">
+                    <label for="login-password">Пароль:</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="btn-success">Войти</button>
+                    <button type="button" class="btn-secondary" onclick="showRegisterModal()">Регистрация</button>
+                </div>
+                <div class="text-center" style="margin-top: 15px; font-size: 0.9rem; color: #666;">
+                    <a href="#" onclick="showAdminLogin()" style="color: var(--danger-color); text-decoration: underline;">Войти как администратор</a>
+                </div>
+            </form>
         </div>
-    </main>
+    </div>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 Автопрокат. Все права защищены.</p>
-            <p>Цены указаны в белорусских рублях (BYN)</p>
+    <div id="register-modal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Регистрация</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="register-name">Имя:</label>
+                    <input type="text" id="register-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email:</label>
+                    <input type="email" id="register-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-phone">Телефон:</label>
+                    <input type="tel" id="register-phone">
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Пароль:</label>
+                    <input type="password" id="register-password" required>
+                    <small class="hint">Минимум 6 символов</small>
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm-password">Подтвердите пароль:</label>
+                    <input type="password" id="register-confirm-password" required>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="btn-success">Зарегистрироваться</button>
+                    <button type="button" class="btn-secondary" onclick="showLoginModal()">Уже есть аккаунт</button>
+                </div>
+                <div class="text-center" style="margin-top: 15px; font-size: 0.9rem; color: #666;">
+                    <a href="#" onclick="showAdminLogin()" style="color: var(--danger-color); text-decoration: underline;">Войти как администратор</a>
+                </div>
+            </form>
         </div>
-    </footer>
+    </div>
+
+    <!-- Модальное окно добавления автомобиля -->
+    <div id="add-car-modal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Добавление автомобиля</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <form id="add-car-form">
+                <div class="form-group">
+                    <label for="car-model">Модель:</label>
+                    <input type="text" id="car-model" required>
+                </div>
+                <div class="form-group">
+                    <label for="car-class-select">Класс:</label>
+                    <select id="car-class-select" required>
+                        <option value="">Выберите класс</option>
+                        <option value="1">Эконом</option>
+                        <option value="2">Комфорт</option>
+                        <option value="3">Бизнес</option>
+                        <option value="4">Внедорожник</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="car-license">Госномер:</label>
+                    <input type="text" id="car-license" required>
+                </div>
+                <div class="form-group">
+                    <label for="car-year">Год:</label>
+                    <input type="number" id="car-year" min="2000" max="2025">
+                </div>
+                <div class="form-group">
+                    <label for="car-color">Цвет:</label>
+                    <input type="text" id="car-color">
+                </div>
+                <div class="form-group">
+                    <label for="car-features">Особенности:</label>
+                    <textarea id="car-features" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="car-price">Цена за день (BYN):</label>
+                    <input type="number" id="car-price" min="0" step="0.01" required>
+                </div>
+                <button type="submit" class="btn-success">Добавить</button>
+            </form>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
