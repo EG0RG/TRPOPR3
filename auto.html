@@ -10,71 +10,46 @@
     <!-- Стартовая страница выбора роли -->
     <div id="start-page" class="start-page active">
         <div class="start-container">
-            <h1 class="start-title">🚗 Автопрокат</h1>
+            <h1 class="start-title">Автопрокат</h1>
             <p class="start-subtitle">Система бронирования автомобилей</p>
             
             <div class="role-selection">
-                <!-- Роль: Гость -->
+                <!-- Гость -->
                 <div class="role-card guest">
-                    <span class="role-icon">👤</span>
+                    <div class="role-icon">Г</div>
                     <h2 class="role-title">Гость</h2>
                     <p class="role-description">
-                        Просмотр свободных автомобилей без возможности бронирования
+                        Просмотр свободных автомобилей
                     </p>
-                    <div class="role-features">
-                        <ul>
-                            <li>Просмотр всех автомобилей</li>
-                            <li>Проверка доступности на дату</li>
-                            <li>Без регистрации</li>
-                            <li>Можно зарегистрироваться позже</li>
-                        </ul>
-                    </div>
-                    <button class="btn-info" onclick="selectRole('guest')" style="width: 100%; margin-top: 20px;">
+                    <button onclick="selectRole('guest')" class="btn-info">
                         Продолжить как гость
                     </button>
                 </div>
                 
-                <!-- Роль: Пользователь -->
+                <!-- Пользователь -->
                 <div class="role-card user">
-                    <span class="role-icon">👥</span>
+                    <div class="role-icon">П</div>
                     <h2 class="role-title">Пользователь</h2>
                     <p class="role-description">
-                        Бронирование автомобилей и управление своими заказами
+                        Бронирование автомобилей
                     </p>
-                    <div class="role-features">
-                        <ul>
-                            <li>Все возможности гостя</li>
-                            <li>Бронирование автомобилей</li>
-                            <li>Просмотр своих бронирований</li>
-                            <li>Подтверждение по email</li>
-                        </ul>
-                    </div>
-                    <button class="btn-success" onclick="selectRole('user')" style="width: 100%; margin-top: 20px;">
-                        Войти как пользователь
+                    <button onclick="selectRole('user')" class="btn-success">
+                        Войти / Регистрация
                     </button>
                 </div>
                 
-                <!-- Роль: Администратор -->
+                <!-- Администратор -->
                 <div class="role-card admin">
-                    <span class="role-icon">👑</span>
+                    <div class="role-icon">А</div>
                     <h2 class="role-title">Администратор</h2>
                     <p class="role-description">
-                        Полный доступ к управлению системой и просмотру отчетов
+                        Управление системой
                     </p>
-                    <div class="role-features">
-                        <ul>
-                            <li>Все возможности пользователя</li>
-                            <li>Полные отчеты</li>
-                            <li>Управление автомобилями</li>
-                            <li>Управление бронированиями</li>
-                        </ul>
-                    </div>
-                    <button class="btn-danger" onclick="selectRole('admin')" style="width: 100%; margin-top: 20px;">
+                    <button onclick="selectRole('admin')" class="btn-danger">
                         Войти как администратор
                     </button>
                 </div>
             </div>
-            
         </div>
     </div>
 
@@ -83,9 +58,18 @@
         <header>
             <div class="container">
                 <div class="header-content">
-                    <div class="logo"> Автопрокат</div>
-                
-                
+                    <div class="logo">Автопрокат</div>
+                    
+                    <nav>
+                        <ul>
+                            <li><a href="#" class="nav-link active" data-section="available-cars" id="available-cars-nav">Свободные авто</a></li>
+                            <li><a href="#" class="nav-link" data-section="booking" id="booking-nav">Бронирование</a></li>
+                            <li><a href="#" class="nav-link" data-section="my-bookings" id="my-bookings-nav">Мои бронирования</a></li>
+                            <li><a href="#" class="nav-link" data-section="reports" id="reports-nav">Отчеты</a></li>
+                            <li><a href="#" class="nav-link" data-section="admin-cars" id="admin-cars-nav">Управление авто</a></li>
+                        </ul>
+                    </nav>
+                    
                     <div class="auth-panel">
                         <div id="auth-buttons" style="display: none;">
                             <!-- Кнопки для гостя -->
@@ -134,10 +118,6 @@
                 <section id="booking" class="section">
                     <h2 class="section-title">Бронирование автомобиля</h2>
                     
-                    <div id="booking-notice" class="guest-notice" style="display: none;">
-                        Для бронирования необходимо использовать данные из вашего профиля
-                    </div>
-                    
                     <div class="card">
                         <form id="booking-form">
                             <div class="form-group">
@@ -164,9 +144,6 @@
                             </div>
                             
                             <button type="submit" id="search-cars-btn">Найти автомобиль</button>
-                            <button type="button" onclick="autofillUserData()" class="btn-small btn-info" id="autofill-btn" style="margin-top: 10px; display: none;">
-                                Заполнить моими данными
-                            </button>
                         </form>
                     </div>
 
@@ -185,17 +162,14 @@
                             <div class="form-group">
                                 <label for="client-name">ФИО клиента:</label>
                                 <input type="text" id="client-name" required>
-                                <small class="hint" id="name-hint">Должно совпадать с именем из вашего профиля</small>
                             </div>
                             <div class="form-group">
                                 <label for="client-phone">Телефон:</label>
                                 <input type="tel" id="client-phone" required>
-                                <small class="hint" id="phone-hint">Должен совпадать с телефоном из вашего профиля</small>
                             </div>
                             <div class="form-group">
                                 <label for="client-email">Email:</label>
                                 <input type="email" id="client-email" required>
-                                <small class="hint" id="email-hint">Должен совпадать с email из вашего профиля</small>
                             </div>
                             <div class="booking-summary">
                                 <h4>Детали бронирования:</h4>
@@ -204,7 +178,6 @@
                             </div>
                             <div class="button-group">
                                 <button type="submit" class="btn-success">Отправить заявку на бронирование</button>
-                                <button type="button" onclick="checkUserData()" class="btn-small btn-info">Проверить данные</button>
                             </div>
                         </form>
                     </div>
@@ -256,7 +229,9 @@
                 <!-- Секция моих бронирований -->
                 <section id="my-bookings" class="section">
                     <h2 class="section-title">Мои бронирования</h2>
-                    
+                    <div id="my-bookings-container" class="card">
+                        <!-- Контент будет загружен через JavaScript -->
+                    </div>
                 </section>
 
                 <!-- Секция отчетов (только для админа) -->
@@ -352,14 +327,8 @@
                 <section id="admin-cars" class="section">
                     <h2 class="section-title">Управление автомобилями</h2>
                     
-                    <div class="card">
-                        <div class="button-group">
-                            <button class="btn-success" onclick="showAddCarModal()">Добавить автомобиль</button>
-                        </div>
-                    </div>
-
                     <div id="admin-cars-container" class="card">
-                        <p>Загрузка автомобилей...</p>
+                        <!-- Контент будет загружен через JavaScript -->
                     </div>
                 </section>
             </div>
@@ -368,7 +337,6 @@
         <footer>
             <div class="container">
                 <p>&copy; 2025 Автопрокат. Все права защищены.</p>
-                <button onclick="switchToStartPage()" class="btn-small btn-secondary" style="margin-top: 10px;">Сменить роль</button>
             </div>
         </footer>
     </div>
@@ -382,8 +350,8 @@
             </div>
             <form id="login-form">
                 <div class="form-group">
-                    <label for="login-email">Email:</label>
-                    <input type="email" id="login-email" required>
+                    <label for="login-username">Имя пользователя:</label>
+                    <input type="text" id="login-username" required>
                 </div>
                 <div class="form-group">
                     <label for="login-password">Пароль:</label>
@@ -392,9 +360,6 @@
                 <div class="button-group">
                     <button type="submit" class="btn-success">Войти</button>
                     <button type="button" class="btn-secondary" onclick="showRegisterModal()">Регистрация</button>
-                </div>
-                <div class="text-center" style="margin-top: 15px; font-size: 0.9rem; color: #666;">
-                    <a href="#" onclick="showAdminLogin()" style="color: var(--danger-color); text-decoration: underline;">Войти как администратор</a>
                 </div>
             </form>
         </div>
@@ -431,9 +396,6 @@
                 <div class="button-group">
                     <button type="submit" class="btn-success">Зарегистрироваться</button>
                     <button type="button" class="btn-secondary" onclick="showLoginModal()">Уже есть аккаунт</button>
-                </div>
-                <div class="text-center" style="margin-top: 15px; font-size: 0.9rem; color: #666;">
-                    <a href="#" onclick="showAdminLogin()" style="color: var(--danger-color); text-decoration: underline;">Войти как администратор</a>
                 </div>
             </form>
         </div>

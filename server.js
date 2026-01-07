@@ -5,6 +5,7 @@ const path = require('path');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
 
 const app = express();
 
@@ -68,12 +69,13 @@ async function initDatabase() {
         // Создаем таблицу пользователей
         db.run(`CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE NOT NULL,
+            email TEXT,
+            username TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'user',
             name TEXT NOT NULL,
             phone TEXT,
-            role TEXT DEFAULT 'user',
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
 
         // Создаем таблицу классов автомобилей
@@ -179,7 +181,7 @@ async function initDatabase() {
         console.log('База данных инициализирована');
     });
     
-    // Создаем администратора после инициализации таблиц
+    // Создаем администратора
     await createAdminUser();
 }
 
@@ -204,7 +206,6 @@ const setupEmailTransporter = async () => {
         transporter.verify((error, success) => {
             if (error) {
                 console.error('Ошибка подключения к Gmail:', error.message);
-                
                 transporter = {
                     sendMail: async () => {
                         console.log('Email отправлен (заглушка)');
@@ -275,7 +276,6 @@ async function sendConfirmationEmail(clientEmail, clientName, confirmationCode, 
 
         let info = await transporter.sendMail(mailOptions);
         console.log('Письмо отправлено:', clientEmail);
-        
         return true;
     } catch (error) {
         console.error('Ошибка отправки письма:', error);
@@ -300,16 +300,12 @@ function startConfirmationChecker() {
     console.log('Запущен проверщик просроченных бронирований');
 }
 
-// =============================================
 // СОЗДАНИЕ АДМИНИСТРАТОРА
-// =============================================
-
 async function createAdminUser() {
     return new Promise((resolve, reject) => {
-        const adminEmail = 'admin@example.com';
+        const adminUsername = 'admin';
         
-        // Проверяем, существует ли уже администратор
-        db.get('SELECT id FROM users WHERE email = ?', [adminEmail], async (err, row) => {
+        db.get('SELECT id FROM users WHERE username = ?', [adminUsername], async (err, row) => {
             if (err) {
                 console.error('Ошибка проверки администратора:', err);
                 reject(err);
@@ -322,20 +318,19 @@ async function createAdminUser() {
                 return;
             }
             
-            // Создаем хеш пароля
             try {
                 const hashedPassword = await bcrypt.hash('admin123', SALT_ROUNDS);
                 
                 db.run(
-                    'INSERT INTO users (email, password, name, phone, role) VALUES (?, ?, ?, ?, ?)',
-                    [adminEmail, hashedPassword, 'Администратор', '+375291234567', 'admin'],
+                    'INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)',
+                    [adminUsername, hashedPassword, 'Администратор', 'admin'],
                     function(err) {
                         if (err) {
                             console.error('Ошибка создания администратора:', err);
                             reject(err);
                         } else {
                             console.log('Администратор успешно создан:');
-                            console.log('   Email: admin@example.com');
+                            console.log('   Имя пользователя: admin');
                             console.log('   Пароль: admin123');
                             resolve();
                         }
@@ -353,7 +348,7 @@ async function createAdminUser() {
 // API ENDPOINTS - ПУБЛИЧНЫЕ (для гостей)
 // =============================================
 
-// 1. Проверка свободных автомобилей (публичный доступ)
+// 1. Проверка свободных автомобилей
 app.post('/api/available-cars', (req, res) => {
     try {
         const { date } = req.body;
@@ -423,12 +418,11 @@ app.post('/api/register', async (req, res) => {
             return res.status(400).json({ error: 'Email, пароль и имя обязательны' });
         }
         
-        // Проверяем, не пытается ли зарегистрироваться с email администратора
         if (email === 'admin@example.com') {
             return res.status(400).json({ error: 'Этот email зарезервирован для администратора' });
         }
         
-        db.get('SELECT id FROM users WHERE email = ?', [email], async (err, row) => {
+        db.get('SELECT id FROM users WHERE email = ? OR username = ?', [email, email], async (err, row) => {
             if (err) {
                 console.error('Ошибка проверки email:', err);
                 return res.status(500).json({ error: 'Ошибка БД' });
@@ -440,19 +434,20 @@ app.post('/api/register', async (req, res) => {
             
             try {
                 const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+                const username = email.split('@')[0];
                 
                 db.run(
-                    'INSERT INTO users (email, password, name, phone, role) VALUES (?, ?, ?, ?, ?)',
-                    [email, hashedPassword, name, phone || '', 'user'],
+                    'INSERT INTO users (email, username, password, name, phone, role) VALUES (?, ?, ?, ?, ?, ?)',
+                    [email, username, hashedPassword, name, phone || '', 'user'],
                     function(err) {
                         if (err) {
                             console.error('Ошибка создания пользователя:', err);
-                            return res.status(500).json({ error: 'Ошибка создания пользователя' });
+                            return res.status(500).json({ error: 'Ошибка создания пользователя: ' + err.message });
                         }
                         
                         const userId = this.lastID;
                         const token = jwt.sign(
-                            { id: userId, email, name, role: 'user' },
+                            { id: userId, email, name, phone: phone || '', role: 'user' },
                             JWT_SECRET,
                             { expiresIn: '7d' }
                         );
@@ -463,7 +458,7 @@ app.post('/api/register', async (req, res) => {
                             user: { 
                                 id: userId, 
                                 email, 
-                                name, 
+                                name,
                                 phone: phone || '', 
                                 role: 'user' 
                             },
@@ -491,9 +486,10 @@ app.post('/api/login', (req, res) => {
             return res.status(400).json({ error: 'Email и пароль обязательны' });
         }
         
-        console.log('Попытка входа для email:', email);
+        console.log('Попытка входа:', email);
         
-        db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
+        // Ищем пользователя по email ИЛИ username
+        db.get('SELECT * FROM users WHERE email = ? OR username = ?', [email, email], async (err, user) => {
             if (err) {
                 console.error('Ошибка БД при входе:', err);
                 return res.status(500).json({ error: 'Ошибка БД' });
@@ -501,26 +497,27 @@ app.post('/api/login', (req, res) => {
             
             if (!user) {
                 console.log('Пользователь не найден:', email);
-                return res.status(401).json({ error: 'Неверный email или пароль' });
+                return res.status(401).json({ error: 'Неверные учетные данные' });
             }
             
-            console.log('Найден пользователь:', user.email, 'роль:', user.role);
+            console.log('Найден пользователь:', user.username, 'роль:', user.role, 'имя:', user.name);
             
             try {
                 const validPassword = await bcrypt.compare(password, user.password);
                 
                 if (!validPassword) {
                     console.log('Неверный пароль для:', email);
-                    return res.status(401).json({ error: 'Неверный email или пароль' });
+                    return res.status(401).json({ error: 'Неверные учетные данные' });
                 }
                 
-                console.log('Пароль верный для:', email);
+                console.log('Пароль верный для:', user.username);
                 
                 const token = jwt.sign(
                     { 
                         id: user.id, 
                         email: user.email, 
-                        name: user.name, 
+                        name: user.name,
+                        phone: user.phone || '',
                         role: user.role 
                     },
                     JWT_SECRET,
@@ -560,7 +557,7 @@ app.post('/api/login', (req, res) => {
 app.get('/api/profile', authenticateToken, (req, res) => {
     try {
         db.get(
-            'SELECT id, email, name, phone, role, created_at FROM users WHERE id = ?',
+            'SELECT id, email, username, name, phone, role, created_at FROM users WHERE id = ?',
             [req.user.id],
             (err, user) => {
                 if (err) {
@@ -574,7 +571,7 @@ app.get('/api/profile', authenticateToken, (req, res) => {
                 
                 res.json({
                     success: true,
-                    user
+                    user: user
                 });
             }
         );
@@ -592,7 +589,6 @@ app.post('/api/bookings', authenticateToken, async (req, res) => {
         
         const { client_name, client_phone, client_email, car_id, start_date, duration } = req.body;
         
-        // Проверяем соответствие данных пользователя
         if (client_email !== req.user.email) {
             return res.status(400).json({ error: 'Email должен совпадать с email из вашего профиля' });
         }
@@ -1187,7 +1183,8 @@ app.listen(PORT, () => {
     console.log(`📍 http://localhost:${PORT}`);
     console.log('БАЗА ДАННЫХ РАБОТАЕТ!');
     console.log('СИСТЕМА АВТОРИЗАЦИИ АКТИВНА');
-    console.log('ТРИ РОЛИ: гость, пользователь, администратор');
-    console.log('ОТЧЕТЫ: доступны только администраторам');
+    console.log('Администратор:');
+    console.log('   Имя пользователя: admin');
+    console.log('   Пароль: admin123');
     console.log('='.repeat(50));
 });

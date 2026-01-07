@@ -11,105 +11,83 @@ document.addEventListener('DOMContentLoaded', function() {
     // Проверяем, есть ли сохраненный пользователь
     checkSavedUser();
     
-    // Устанавливаем даты по умолчанию С ОГРАНИЧЕНИЯМИ
-    setDefaultDatesWithLimits();
+    // Устанавливаем даты по умолчанию
+    setDefaultDates();
     
     // Инициализируем формы
     initializeForms();
     
-    // Инициализируем навигацию (скрытая до выбора роли)
+    // Инициализируем навигацию
     initializeNavigation();
     
     console.log('Система инициализирована');
 });
 
 // =============================================
-// НОВЫЕ ФУНКЦИИ ДЛЯ ПРОВЕРКИ ДАТ
+// ФУНКЦИИ ДЛЯ ПРОВЕРКИ ДАТ
 // =============================================
 
-function setDefaultDatesWithLimits() {
+function setDefaultDates() {
     console.log('Установка дат с ограничениями');
     
     const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
     const minBookingDate = new Date(today);
-    minBookingDate.setDate(minBookingDate.getDate() + 30); // МИНИМУМ через 30 дней
+    minBookingDate.setDate(minBookingDate.getDate() + 30);
     
-    // 1. Поле для проверки доступности (сегодня и будущее)
+    // Поле для проверки доступности
     const checkDateInput = document.getElementById('check-date');
     if (checkDateInput) {
         checkDateInput.min = formatDate(today);
         checkDateInput.value = formatDate(today);
     }
     
-    // 2. Поле для начала аренды (завтра + 30 дней максимум)
+    // Поле для начала аренды
     const startDateInput = document.getElementById('start-date');
     if (startDateInput) {
-      startDateInput.min = formatDate(minBookingDate);
-        
-        // Устанавливаем значение по умолчанию как минимальную дату
-        startDateInput.value = formatDate(tomorrow);
-        
-        // Добавляем проверку при изменении
+        startDateInput.min = formatDate(minBookingDate);
+        startDateInput.value = formatDate(minBookingDate);
         startDateInput.addEventListener('change', validateStartDate);
     }
     
-    // 3. Год для отчетов (текущий)
+    // Год для отчетов
     const reportYearInput = document.getElementById('report-year');
     if (reportYearInput) {
         reportYearInput.value = today.getFullYear();
     }
     
-    console.log('Даты установлены: мин:', formatDate(tomorrow), 'макс:', formatDate(maxBookingDate));
+    console.log('Даты установлены');
 }
 
-// Проверка даты начала аренды
 function validateStartDate() {
     const startDateInput = document.getElementById('start-date');
     if (!startDateInput) return true;
     
     const selectedDate = new Date(startDateInput.value);
     const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const maxDate = new Date(today);
-    maxDate.setDate(maxDate.getDate() + 30);
+    const minBookingDate = new Date(today);
+    minBookingDate.setDate(minBookingDate.getDate() + 30);
     
     // Сбрасываем время для сравнения
     selectedDate.setHours(0, 0, 0, 0);
     today.setHours(0, 0, 0, 0);
-    tomorrow.setHours(0, 0, 0, 0);
-    maxDate.setHours(0, 0, 0, 0);
+    minBookingDate.setHours(0, 0, 0, 0);
     
- // Проверка: Нельзя бронировать раньше чем через 30 дней
-const minBookingDate = new Date(today);
-minBookingDate.setDate(minBookingDate.getDate() + 30);
-minBookingDate.setHours(0, 0, 0, 0);
-
-if (selectedDate < minBookingDate) {
-    alert(` ОШИБКА!\nБронирование возможно только через 30 дней от текущей даты.\nМинимальная доступная дата: ${formatDate(minBookingDate)}`);
-    
-    // Сбрасываем на минимальную дату (через 30 дней)
-    startDateInput.value = formatDate(minBookingDate);
-    startDateInput.focus();
-    return false;
-}
-
-// Проверку на максимальный срок УБИРАЕМ - можно бронировать на любой срок вперед
+    if (selectedDate < minBookingDate) {
+        alert(`ОШИБКА!\nБронирование возможно только через 30 дней от текущей даты.\nМинимальная доступная дата: ${formatDate(minBookingDate)}`);
+        startDateInput.value = formatDate(minBookingDate);
+        startDateInput.focus();
+        return false;
+    }
     
     return true;
 }
 
-// Проверка перед поиском автомобилей
 function validateSearchDate() {
     const startDateInput = document.getElementById('start-date');
     if (!startDateInput) return false;
-    
     return validateStartDate();
 }
 
-// Форматирование даты в YYYY-MM-DD
 function formatDate(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -118,10 +96,9 @@ function formatDate(date) {
 }
 
 // =============================================
-// ОСТАЛЬНОЙ КОД (с небольшими изменениями)
+// ПРОВЕРКА СОХРАНЕННОГО ПОЛЬЗОВАТЕЛЯ
 // =============================================
 
-// Проверка сохраненного пользователя
 function checkSavedUser() {
     const savedUser = localStorage.getItem('user_data');
     const token = localStorage.getItem('auth_token');
@@ -129,16 +106,13 @@ function checkSavedUser() {
     if (savedUser && token) {
         try {
             currentUser = JSON.parse(savedUser);
-            console.log('Найден сохраненный пользователь:', currentUser.email, 'роль:', currentUser.role);
+            console.log('Найден сохраненный пользователь:', currentUser.name, 'роль:', currentUser.role);
             
-            // Сразу показываем основной интерфейс
             document.getElementById('start-page').style.display = 'none';
             document.getElementById('main-interface').style.display = 'block';
             
-            // Обновляем UI
             updateUIForUserRole();
             
-            // Показываем первую секцию в зависимости от роли
             if (currentUser.role === 'admin') {
                 showSection('reports');
             } else {
@@ -170,41 +144,31 @@ function selectRole(role) {
     console.log('Выбрана роль:', role);
     
     if (role === 'guest') {
-        // Гость - показываем основной интерфейс без авторизации
         currentUser = { role: 'guest' };
         showMainInterface('guest');
-    } else if (role === 'user' || role === 'admin') {
-        // Пользователь или админ - показываем окно входа
-        showLoginModal(role);
+    } else if (role === 'user') {
+        showLoginModal('user');
+    } else if (role === 'admin') {
+        showAdminLogin();
     }
 }
 
 function showMainInterface(userRole) {
     console.log('Показываем основной интерфейс для роли:', userRole);
     
-    // Прячем стартовую страницу
     document.getElementById('start-page').style.display = 'none';
     document.getElementById('start-page').classList.remove('active');
-    
-    // Показываем основной интерфейс
     document.getElementById('main-interface').style.display = 'block';
     
-    // Обновляем UI для текущей роли
     updateUIForUserRole();
-    
-    // Показываем первую секцию
     showSection('available-cars');
 }
 
 function switchToStartPage() {
-    // Прячем основной интерфейс
     document.getElementById('main-interface').style.display = 'none';
-    
-    // Показываем стартовую страницу
     document.getElementById('start-page').style.display = 'block';
     document.getElementById('start-page').classList.add('active');
     
-    // Сбрасываем пользователя
     currentUser = null;
     localStorage.removeItem('user_data');
     localStorage.removeItem('auth_token');
@@ -217,17 +181,14 @@ function switchToStartPage() {
 function showSection(sectionId) {
     console.log('Показываем секцию:', sectionId, 'для роли:', currentUser?.role);
     
-    // СПЕЦИАЛЬНОЕ ПРАВИЛО ДЛЯ АДМИНА: скрываем бронирования
     if (currentUser && currentUser.role === 'admin') {
-        // Админу запрещаем доступ к бронированиям
         if (sectionId === 'booking' || sectionId === 'my-bookings') {
             alert('Администратор не может создавать бронирования.\nИспользуйте раздел "Отчеты" для просмотра всех бронирований.');
-            showSection('reports'); // Перенаправляем на отчеты
+            showSection('reports');
             return;
         }
     }
     
-    // Проверка доступа для обычных пользователей
     if (sectionId === 'booking' || sectionId === 'my-bookings') {
         if (!currentUser || currentUser.role === 'guest') {
             alert('Для доступа к этому разделу необходимо авторизоваться');
@@ -248,7 +209,6 @@ function showSection(sectionId) {
         link.classList.remove('active');
     });
     
-    // Находим и активируем нужную ссылку
     const activeLink = document.querySelector(`[data-section="${sectionId}"]`);
     if (activeLink) {
         activeLink.classList.add('active');
@@ -272,22 +232,9 @@ function showSection(sectionId) {
     } else if (sectionId === 'admin-cars') {
         loadAdminCars();
     } else if (sectionId === 'available-cars') {
-        // Очищаем предыдущие результаты
         const resultsSection = document.getElementById('availability-results');
         if (resultsSection) {
             resultsSection.classList.add('hidden');
-        }
-    } else if (sectionId === 'booking') {
-        // Показываем/скрываем уведомление о данных
-        const bookingNotice = document.getElementById('booking-notice');
-        const autofillBtn = document.getElementById('autofill-btn');
-        
-        if (currentUser && currentUser.role !== 'guest') {
-            if (bookingNotice) bookingNotice.style.display = 'block';
-            if (autofillBtn) autofillBtn.style.display = 'inline-block';
-        } else {
-            if (bookingNotice) bookingNotice.style.display = 'none';
-            if (autofillBtn) autofillBtn.style.display = 'none';
         }
     }
 }
@@ -299,85 +246,41 @@ function showSection(sectionId) {
 function updateUIForUserRole() {
     console.log('Обновление UI для роли:', currentUser ? currentUser.role : 'none');
     
-    // Управление верхней панелью
-    const authButtons = document.getElementById('auth-buttons');
-    const userInfo = document.getElementById('user-info');
-    const guestNotice = document.getElementById('guest-notice');
-    
-    // Навигационные элементы
+    // Получаем элементы навигации
+    const availableCarsNav = document.getElementById('available-cars-nav');
     const bookingNav = document.getElementById('booking-nav');
     const myBookingsNav = document.getElementById('my-bookings-nav');
     const reportsNav = document.getElementById('reports-nav');
     const adminCarsNav = document.getElementById('admin-cars-nav');
     
-    // ВСПОМОГАТЕЛЬНЫЕ ЭЛЕМЕНТЫ
-    // Секция поиска автомобилей
-    const searchSection = document.getElementById('booking');
-    const searchForm = document.getElementById('booking-form');
+    // Элементы верхней панели
+    const authButtons = document.getElementById('auth-buttons');
+    const userInfo = document.getElementById('user-info');
+    const guestNotice = document.getElementById('guest-notice');
     
-    // Секция проверки доступности
-    const availabilitySection = document.getElementById('available-cars');
-    const availabilityForm = document.getElementById('availability-check');
-    
-    // Секция отчетов
-    const reportsSection = document.getElementById('reports');
-    
-    // Секция управления авто
-    const adminCarsSection = document.getElementById('admin-cars');
-    
-    // ====================
-    // Гость (неавторизованный)
-    // ====================
+    // Гость
     if (!currentUser || currentUser.role === 'guest') {
         console.log('Настройка UI для гостя');
         
-        // Верхняя панель
-        if (authButtons) {
-            authButtons.style.display = 'flex';
-            authButtons.style.gap = '10px';
-        }
+        if (authButtons) authButtons.style.display = 'flex';
         if (userInfo) userInfo.style.display = 'none';
         if (guestNotice) guestNotice.style.display = 'block';
         
-        // НАВИГАЦИЯ для гостя
-        // Показываем только "Свободные авто"
+        if (availableCarsNav) availableCarsNav.style.display = 'block';
         if (bookingNav) bookingNav.style.display = 'none';
         if (myBookingsNav) myBookingsNav.style.display = 'none';
         if (reportsNav) reportsNav.style.display = 'none';
         if (adminCarsNav) adminCarsNav.style.display = 'none';
         
-        // СЕКЦИИ для гостя
-        // Скрываем формы бронирования и управления
-        if (searchSection) searchSection.style.display = 'none';
-        if (reportsSection) reportsSection.style.display = 'none';
-        if (adminCarsSection) adminCarsSection.style.display = 'none';
-        
-        // Показываем только проверку доступности
-        if (availabilitySection) availabilitySection.style.display = 'block';
-        if (availabilityForm) availabilityForm.style.display = 'block';
-        
-        // Внутри секции доступности убираем кнопки бронирования
-        const bookButtons = document.querySelectorAll('.book-btn, .btn-info[onclick*="bookThisCar"]');
-        bookButtons.forEach(btn => {
-            btn.style.display = 'none';
-        });
-        
-    // ====================
     // Обычный пользователь
-    // ====================
     } else if (currentUser.role === 'user') {
         console.log('Настройка UI для пользователя:', currentUser.name);
         
-        // Верхняя панель
         if (authButtons) authButtons.style.display = 'none';
         if (userInfo) {
             userInfo.style.display = 'flex';
-            userInfo.style.alignItems = 'center';
-            userInfo.style.gap = '10px';
-            
             const userName = document.getElementById('user-name');
             const userRoleBadge = document.getElementById('user-role-badge');
-            
             if (userName) userName.textContent = currentUser.name;
             if (userRoleBadge) {
                 userRoleBadge.textContent = 'Пользователь';
@@ -386,44 +289,21 @@ function updateUIForUserRole() {
         }
         if (guestNotice) guestNotice.style.display = 'none';
         
-        // НАВИГАЦИЯ для пользователя
-        // Показываем: "Свободные авто", "Бронирование", "Мои бронирования"
+        if (availableCarsNav) availableCarsNav.style.display = 'block';
         if (bookingNav) bookingNav.style.display = 'block';
         if (myBookingsNav) myBookingsNav.style.display = 'block';
-        // Скрываем админские разделы
         if (reportsNav) reportsNav.style.display = 'none';
         if (adminCarsNav) adminCarsNav.style.display = 'none';
         
-        // СЕКЦИИ для пользователя
-        // Показываем все, кроме админских разделов
-        if (searchSection) searchSection.style.display = 'block';
-        if (availabilitySection) availabilitySection.style.display = 'block';
-        // Скрываем админские разделы
-        if (reportsSection) reportsSection.style.display = 'none';
-        if (adminCarsSection) adminCarsSection.style.display = 'none';
-        
-        // Внутри секции доступности показываем кнопки бронирования
-        const bookButtons = document.querySelectorAll('.btn-info[onclick*="bookThisCar"]');
-        bookButtons.forEach(btn => {
-            btn.style.display = 'inline-block';
-        });
-        
-    // ====================
     // Администратор
-    // ====================
     } else if (currentUser.role === 'admin') {
         console.log('Настройка UI для администратора:', currentUser.name);
         
-        // Верхняя панель
         if (authButtons) authButtons.style.display = 'none';
         if (userInfo) {
             userInfo.style.display = 'flex';
-            userInfo.style.alignItems = 'center';
-            userInfo.style.gap = '10px';
-            
             const userName = document.getElementById('user-name');
             const userRoleBadge = document.getElementById('user-role-badge');
-            
             if (userName) userName.textContent = currentUser.name;
             if (userRoleBadge) {
                 userRoleBadge.textContent = 'Админ';
@@ -432,100 +312,11 @@ function updateUIForUserRole() {
         }
         if (guestNotice) guestNotice.style.display = 'none';
         
-        // НАВИГАЦИЯ для администратора
-        // Показываем: "Свободные авто", "Отчеты", "Управление авто"
-        // Скрываем: "Бронирование", "Мои бронирования"
+        if (availableCarsNav) availableCarsNav.style.display = 'block';
         if (bookingNav) bookingNav.style.display = 'none';
         if (myBookingsNav) myBookingsNav.style.display = 'none';
         if (reportsNav) reportsNav.style.display = 'block';
         if (adminCarsNav) adminCarsNav.style.display = 'block';
-        
-        // СЕКЦИИ для администратора
-        // Скрываем формы бронирования
-        if (searchSection) searchSection.style.display = 'none';
-        // Показываем проверку доступности (только просмотр)
-        if (availabilitySection) availabilitySection.style.display = 'block';
-        // Показываем админские разделы
-        if (reportsSection) reportsSection.style.display = 'block';
-        if (adminCarsSection) adminCarsSection.style.display = 'block';
-        
-        // Внутри секции доступности убираем кнопки бронирования
-        const bookButtons = document.querySelectorAll('.book-btn, .btn-info[onclick*="bookThisCar"]');
-        bookButtons.forEach(btn => {
-            btn.style.display = 'none';
-        });
-        
-        // Вместо кнопок бронирования показываем сообщение
-        const carCards = document.querySelectorAll('.car-card');
-        carCards.forEach(card => {
-            const bookingBtn = card.querySelector('.btn-info[onclick*="bookThisCar"]');
-            if (bookingBtn) {
-                bookingBtn.outerHTML = '<span class="admin-view-only">(только просмотр)</span>';
-            }
-        });
-    }
-}
-
-// =============================================
-// АВТОЗАПОЛНЕНИЕ ДАННЫХ ПОЛЬЗОВАТЕЛЯ
-// =============================================
-
-function autofillUserData() {
-    if (!currentUser || currentUser.role === 'guest') {
-        alert('Вы не авторизованы');
-        return;
-    }
-    
-    console.log('Автозаполнение данных пользователя:', currentUser);
-    
-    // Заполняем поля формы данными из профиля
-    document.getElementById('client-name').value = currentUser.name || '';
-    document.getElementById('client-phone').value = currentUser.phone || '';
-    document.getElementById('client-email').value = currentUser.email || '';
-    
-    alert('Данные из вашего профиля заполнены автоматически');
-}
-
-function checkUserData() {
-    if (!currentUser || currentUser.role === 'guest') {
-        alert('Вы не авторизованы');
-        return;
-    }
-    
-    const clientName = document.getElementById('client-name').value.trim();
-    const clientPhone = document.getElementById('client-phone').value.trim();
-    const clientEmail = document.getElementById('client-email').value.trim();
-    
-    let errors = [];
-    
-    // Проверяем соответствие данных
-    if (clientName !== currentUser.name) {
-        errors.push('Имя не совпадает с данными из вашего профиля');
-        document.getElementById('name-hint').style.color = 'var(--danger-color)';
-    } else {
-        document.getElementById('name-hint').style.color = 'var(--success-color)';
-    }
-    
-    if (clientPhone !== currentUser.phone) {
-        errors.push('Телефон не совпадает с данными из вашего профиля');
-        document.getElementById('phone-hint').style.color = 'var(--danger-color)';
-    } else {
-        document.getElementById('phone-hint').style.color = 'var(--success-color)';
-    }
-    
-    if (clientEmail !== currentUser.email) {
-        errors.push('Email не совпадает с данными из вашего профиля');
-        document.getElementById('email-hint').style.color = 'var(--danger-color)';
-    } else {
-        document.getElementById('email-hint').style.color = 'var(--success-color)';
-    }
-    
-    if (errors.length > 0) {
-        alert('Обнаружены ошибки:\n\n' + errors.join('\n'));
-        return false;
-    } else {
-        alert('✓ Все данные соответствуют вашему профилю!');
-        return true;
     }
 }
 
@@ -539,19 +330,14 @@ function showLoginModal(requestedRole = 'user') {
     const modal = document.getElementById('login-modal');
     if (modal) {
         modal.style.display = 'flex';
-        
-        // Очищаем поля формы
-        document.getElementById('login-email').value = '';
+        document.getElementById('login-username').value = '';
         document.getElementById('login-password').value = '';
-        
-        // Фокусируемся на поле email
-        setTimeout(() => {
-            const emailInput = document.getElementById('login-email');
-            if (emailInput) emailInput.focus();
-        }, 100);
-        
-        // Сохраняем запрошенную роль для использования после входа
         modal.setAttribute('data-requested-role', requestedRole);
+        
+        setTimeout(() => {
+            const usernameInput = document.getElementById('login-username');
+            if (usernameInput) usernameInput.focus();
+        }, 100);
     }
 }
 
@@ -561,14 +347,9 @@ function showRegisterModal() {
     const modal = document.getElementById('register-modal');
     if (modal) {
         modal.style.display = 'flex';
-        
-        // Сначала закрываем окно входа
         closeModal('login-modal');
-        
-        // Очищаем поля формы при открытии
         clearRegisterForm();
         
-        // Фокусируемся на поле имени
         setTimeout(() => {
             const nameInput = document.getElementById('register-name');
             if (nameInput) nameInput.focus();
@@ -582,21 +363,13 @@ function showAdminLogin() {
     const modal = document.getElementById('login-modal');
     if (modal) {
         modal.style.display = 'flex';
-        
-        // Автозаполняем данные администратора
-        document.getElementById('login-email').value = 'admin@example.com';
+        document.getElementById('login-username').value = 'admin';
         document.getElementById('login-password').value = 'admin123';
-        
-        // Устанавливаем запрошенную роль как администратор
         modal.setAttribute('data-requested-role', 'admin');
-        
-        // Показываем подсказку
-        alert('Данные администратора заполнены автоматически. Нажмите "Войти" для продолжения.');
     }
 }
 
 function clearRegisterForm() {
-    // Очищаем все поля формы регистрации
     const fields = [
         'register-name',
         'register-email',
@@ -609,8 +382,6 @@ function clearRegisterForm() {
         const field = document.getElementById(fieldId);
         if (field) field.value = '';
     });
-    
-    console.log('Форма регистрации очищена');
 }
 
 function closeModal(modalId = null) {
@@ -620,7 +391,6 @@ function closeModal(modalId = null) {
             modal.style.display = 'none';
         }
     } else {
-        // Закрываем все модальные окна
         ['login-modal', 'register-modal', 'add-car-modal'].forEach(id => {
             const modal = document.getElementById(id);
             if (modal) {
@@ -631,7 +401,7 @@ function closeModal(modalId = null) {
 }
 
 // =============================================
-// ФОРМЫ АВТОРИЗАЦИИ
+// ИНИЦИАЛИЗАЦИЯ ФОРМ
 // =============================================
 
 function initializeForms() {
@@ -664,12 +434,11 @@ function initializeForms() {
         });
     }
     
-    // Форма бронирования (с проверкой даты)
+    // Форма бронирования
     const bookingForm = document.getElementById('booking-form');
     if (bookingForm) {
         bookingForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            // Проверяем дату перед поиском
             if (validateSearchDate()) {
                 searchCars();
             }
@@ -713,172 +482,6 @@ function initializeForms() {
     }
 }
 
-async function login() {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    
-    if (!email || !password) {
-        alert('Заполните все поля');
-        return;
-    }
-    
-    console.log('Попытка входа:', email);
-    
-    try {
-        const response = await fetch(`${API_BASE}/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password })
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Ошибка авторизации');
-        }
-        
-        const data = await response.json();
-        console.log('Успешный вход:', data.user.email, 'роль:', data.user.role);
-        
-        // Сохраняем данные
-        localStorage.setItem('auth_token', data.token);
-        localStorage.setItem('user_data', JSON.stringify(data.user));
-        
-        // Обновляем текущего пользователя
-        currentUser = data.user;
-        
-        // Закрываем модальное окно
-        closeModal('login-modal');
-        
-        // Обновляем UI
-        updateUIForUserRole();
-        
-        // Проверяем, какую роль запрашивали
-        const loginModal = document.getElementById('login-modal');
-        const requestedRole = loginModal ? loginModal.getAttribute('data-requested-role') : 'user';
-        
-        alert(`Добро пожаловать, ${data.user.name}!`);
-        
-        // Если пользователь вошел как не та роль, которую запрашивал
-        if (requestedRole === 'admin' && data.user.role !== 'admin') {
-            alert('Вы вошли как пользователь. Для доступа к функциям администратора войдите с учетной записью администратора.');
-        } else if (requestedRole === 'user' && data.user.role === 'admin') {
-            // Если администратор вошел через выбор "Пользователь"
-            alert('Вы вошли как администратор. У вас есть доступ ко всем функциям.');
-        }
-        
-    } catch (error) {
-        console.error('Ошибка авторизации:', error);
-        
-        // Очищаем поля пароля при ошибке
-        document.getElementById('login-password').value = '';
-        
-        alert('Ошибка авторизации: ' + error.message);
-    }
-}
-
-async function register() {
-    const name = document.getElementById('register-name').value;
-    const email = document.getElementById('register-email').value;
-    const phone = document.getElementById('register-phone').value;
-    const password = document.getElementById('register-password').value;
-    const confirmPassword = document.getElementById('register-confirm-password').value;
-    
-    // Валидация данных
-    if (!name || !email || !password || !confirmPassword) {
-        alert('Заполните все обязательные поля');
-        return;
-    }
-    
-    if (password !== confirmPassword) {
-        alert('Пароли не совпадают');
-        document.getElementById('register-password').value = '';
-        document.getElementById('register-confirm-password').value = '';
-        document.getElementById('register-password').focus();
-        return;
-    }
-    
-    if (password.length < 6) {
-        alert('Пароль должен содержать минимум 6 символов');
-        document.getElementById('register-password').value = '';
-        document.getElementById('register-confirm-password').value = '';
-        document.getElementById('register-password').focus();
-        return;
-    }
-    
-    if (email === 'admin@example.com') {
-        alert('Этот email зарезервирован для администратора. Используйте другой email.');
-        document.getElementById('register-email').value = '';
-        document.getElementById('register-email').focus();
-        return;
-    }
-    
-    console.log('Попытка регистрации:', email);
-    
-    try {
-        const response = await fetch(`${API_BASE}/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password, name, phone })
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Ошибка регистрации');
-        }
-        
-        const data = await response.json();
-        console.log('Успешная регистрация:', data.user.email);
-        
-        // Сохраняем данные
-        localStorage.setItem('auth_token', data.token);
-        localStorage.setItem('user_data', JSON.stringify(data.user));
-        
-        // Обновляем текущего пользователя
-        currentUser = data.user;
-        
-        // Очищаем форму регистрации
-        clearRegisterForm();
-        
-        // Закрываем модальное окно
-        closeModal('register-modal');
-        
-        // Обновляем UI
-        updateUIForUserRole();
-        
-        alert(`Регистрация успешна! Добро пожаловать, ${data.user.name}!`);
-        
-    } catch (error) {
-        console.error('Ошибка регистрации:', error);
-        
-        // Очищаем поля паролей при ошибке
-        document.getElementById('register-password').value = '';
-        document.getElementById('register-confirm-password').value = '';
-        document.getElementById('register-password').focus();
-        
-        alert('Ошибка регистрации: ' + error.message);
-    }
-}
-
-function logout() {
-    if (confirm('Вы уверены, что хотите выйти?')) {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user_data');
-        currentUser = { role: 'guest' };
-        
-        // Обновляем UI для гостя
-        updateUIForUserRole();
-        
-        // Показываем только секцию свободных авто
-        showSection('available-cars');
-        
-        alert('Вы успешно вышли из системы');
-    }
-}
-
 // =============================================
 // ИНИЦИАЛИЗАЦИЯ НАВИГАЦИИ
 // =============================================
@@ -891,10 +494,8 @@ function initializeNavigation() {
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            
             const sectionId = this.getAttribute('data-section');
             console.log('Переход к разделу:', sectionId);
-            
             showSection(sectionId);
         });
     });
@@ -989,7 +590,6 @@ function displayAvailableCars(data) {
             const carCard = document.createElement('div');
             carCard.className = 'car-card';
             
-            // Определяем, какую кнопку показывать в зависимости от роли
             let actionButton = '';
             if (currentUser) {
                 if (currentUser.role === 'guest') {
@@ -1019,23 +619,22 @@ function displayAvailableCars(data) {
             }
             
             carCard.innerHTML = `
-                <div class="car-image" style="height: 150px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #eee;">
-                    <span style="font-size: 3rem;">🚗</span>
+                <div class="car-image">
+                    <div class="car-icon ${car.class_name}">${getClassIcon(car.class_name)}</div>
                 </div>
-                <div class="car-content" style="padding: 1rem;">
-                    <span class="car-class ${car.class_name}" style="display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; background: #f0f0f0; color: #333; margin-bottom: 0.5rem;">${car.class_name}</span>
-                    <h3 class="car-model" style="margin: 0 0 0.5rem 0; font-size: 1.2rem; color: var(--primary-color);">${car.model}</h3>
-                    <p class="car-details" style="font-size: 0.9rem; color: #666; margin: 0 0 1rem 0;">
+                <div class="car-content">
+                    <span class="car-class ${car.class_name}">${car.class_name}</span>
+                    <h3 class="car-model">${car.model}</h3>
+                    <p class="car-details">
                         <strong>${car.license_plate}</strong><br>
                         ${car.year} год, ${car.color}<br>
                         ${car.features}
                     </p>
-                    <ul class="car-features" style="list-style: none; padding: 0; margin: 0 0 1rem 0;">
-                        <li style="padding: 0.25rem 0; color: var(--success-color);">Свободен на ${data.date}</li>
-                        <li style="padding: 0.25rem 0; font-weight: bold;">${car.daily_price} BYN/день</li>
+                    <ul class="car-features">
+                        <li>${car.daily_price} BYN/день</li>
                     </ul>
-                    <div class="car-availability" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span class="available-status" style="color: var(--success-color); font-weight: bold;">В наличии</span>
+                    <div class="car-availability">
+                        <span class="available-status">В наличии</span>
                         ${actionButton}
                     </div>
                 </div>
@@ -1048,6 +647,16 @@ function displayAvailableCars(data) {
     resultsSection.scrollIntoView({ behavior: 'smooth' });
 }
 
+function getClassIcon(className) {
+    switch(className) {
+        case 'economy': return 'E';
+        case 'comfort': return 'C';
+        case 'business': return 'B';
+        case 'suv': return 'S';
+        default: return 'A';
+    }
+}
+
 function bookThisCar(carId) {
     if (!currentUser || currentUser.role === 'guest') {
         alert('Для бронирования необходимо авторизоваться');
@@ -1055,19 +664,19 @@ function bookThisCar(carId) {
         return;
     }
     
-    // ОСОБАЯ ПРОВЕРКА ДЛЯ АДМИНА
     if (currentUser.role === 'admin') {
         alert('Администратор не может создавать бронирования. Используйте раздел "Отчеты".');
         showSection('reports');
         return;
     }
     
+    if (!carId || isNaN(carId)) {
+        console.error('Неверный ID автомобиля:', carId);
+        return;
+    }
+    
     console.log('Быстрое бронирование авто ID:', carId);
-    
-    // Переходим к разделу бронирования
     showSection('booking');
-    
-    // Можно добавить автоматический выбор автомобиля в форме
     alert('Выберите параметры бронирования в форме выше');
 }
 
@@ -1080,7 +689,6 @@ async function searchCars() {
     const startDate = document.getElementById('start-date').value;
     const duration = parseInt(document.getElementById('rental-duration').value);
     
-    // ОСОБАЯ ПРОВЕРКА ДЛЯ АДМИНА
     if (currentUser && currentUser.role === 'admin') {
         alert('Администратор не может создавать бронирования. Используйте раздел "Отчеты".');
         showSection('reports');
@@ -1098,7 +706,6 @@ async function searchCars() {
         return;
     }
     
-    // ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: длительность аренды минимум 1 день
     if (duration < 1) {
         alert('Продолжительность аренды должна быть не менее 1 дня');
         document.getElementById('rental-duration').value = 1;
@@ -1187,7 +794,6 @@ function displaySearchResults(result, className, startDate, duration) {
     resultsSection.classList.remove('hidden');
     availableCarsList.innerHTML = '';
     
-    // Сохраняем данные для бронирования
     currentBookingData = { 
         className: className, 
         startDate: startDate, 
@@ -1226,7 +832,6 @@ function displaySearchResults(result, className, startDate, duration) {
 }
 
 function showBookingForm(carId, carModel, dailyPrice, totalPrice) {
-    // ОСОБАЯ ПРОВЕРКА ДЛЯ АДМИНА
     if (currentUser && currentUser.role === 'admin') {
         alert('Администратор не может создавать бронирования. Используйте раздел "Отчеты".');
         return;
@@ -1244,7 +849,6 @@ function showBookingForm(carId, carModel, dailyPrice, totalPrice) {
     bookingForm.classList.remove('hidden');
     bookingForm.scrollIntoView({ behavior: 'smooth' });
     
-    // Сохраняем данные автомобиля
     currentBookingData.carId = carId;
     currentBookingData.carModel = carModel;
     currentBookingData.dailyPrice = dailyPrice;
@@ -1254,7 +858,6 @@ function showBookingForm(carId, carModel, dailyPrice, totalPrice) {
 }
 
 async function submitBooking() {
-    // ОСОБАЯ ПРОВЕРКА ДЛЯ АДМИНА
     if (currentUser && currentUser.role === 'admin') {
         alert('Администратор не может создавать бронирования. Используйте раздел "Отчеты".');
         return;
@@ -1276,7 +879,6 @@ async function submitBooking() {
         return;
     }
     
-    // ПРОВЕРКА СООТВЕТСТВИЯ ДАННЫХ ПОЛЬЗОВАТЕЛЯ
     if (currentUser && currentUser.role !== 'guest') {
         let dataErrors = [];
         
@@ -1295,7 +897,7 @@ async function submitBooking() {
         if (dataErrors.length > 0) {
             const errorMessage = 'Обнаружены несоответствия данных:\n\n' + 
                 dataErrors.join('\n') + 
-                '\n\nИспользуйте кнопку "Заполнить моими данными" или исправьте данные вручную.';
+                '\n\nИсправьте данные вручную.';
             alert(errorMessage);
             return;
         }
@@ -1335,10 +937,7 @@ async function submitBooking() {
         const result = await response.json();
         console.log('Бронирование создано, ID:', result.id);
         
-        // Скрываем форму данных
         document.getElementById('confirmation-form').classList.add('hidden');
-        
-        // Показываем форму подтверждения
         showConfirmationCodeForm(result);
         
     } catch (error) {
@@ -1366,8 +965,6 @@ function showConfirmationCodeForm(bookingResult) {
     confirmationForm.scrollIntoView({ behavior: 'smooth' });
     
     startConfirmationTimer(300, timerElement);
-    
-    // Сохраняем ID бронирования
     currentBookingData.bookingId = bookingResult.id;
 }
 
@@ -1450,8 +1047,6 @@ async function submitConfirmationCode() {
         }
         
         resetForms();
-        
-        // Загружаем обновленный список бронирований
         loadMyBookings();
         
     } catch (error) {
@@ -1465,7 +1060,6 @@ async function submitConfirmationCode() {
 // =============================================
 
 async function loadMyBookings() {
-    // ОСОБАЯ ПРОВЕРКА ДЛЯ АДМИНА
     if (currentUser && currentUser.role === 'admin') {
         const container = document.getElementById('my-bookings-container');
         if (container) {
@@ -1752,7 +1346,6 @@ async function loadAnnualReport() {
         
         const result = await response.json();
         
-        // Отображаем годовой отчет
         const container = document.getElementById('reports-results');
         if (container) {
             container.innerHTML = `
@@ -1835,8 +1428,6 @@ async function rejectBookingAdmin(bookingId) {
         }
         
         alert('Бронирование отклонено');
-        
-        // Обновляем отчет
         loadAdminReport();
         
     } catch (error) {
@@ -1867,8 +1458,6 @@ async function clearAllBookings() {
         
         const result = await response.json();
         alert(`Удалено ${result.deleted_count} бронирований`);
-        
-        // Обновляем отчет
         loadAdminReport();
         
     } catch (error) {
@@ -1952,7 +1541,6 @@ function displayAdminCars(cars) {
                     <td>${car.daily_price} BYN</td>
                     <td>${car.available ? '<span class="status-confirmed">Доступен</span>' : '<span class="status-rejected">Недоступен</span>'}</td>
                     <td>
-                        <button class="btn-small btn-info" onclick="editCar(${car.id})">Редактировать</button>
                         <button class="btn-small btn-danger" onclick="deleteCar(${car.id})">Удалить</button>
                     </td>
                 </tr>
@@ -2044,8 +1632,145 @@ async function deleteCar(carId) {
     }
 }
 
-function editCar(carId) {
-    alert('Функция редактирования автомобиля в разработке');
+// =============================================
+// АВТОРИЗАЦИЯ
+// =============================================
+
+async function login() {
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
+    
+    if (!username || !password) {
+        alert('Заполните все поля');
+        return;
+    }
+    
+    console.log('Попытка входа:', username);
+    
+    try {
+        const response = await fetch(`${API_BASE}/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                email: username,
+                password: password 
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Ошибка авторизации');
+        }
+        
+        const data = await response.json();
+        console.log('Успешный вход:', data.user.name, 'роль:', data.user.role);
+        
+        localStorage.setItem('auth_token', data.token);
+        localStorage.setItem('user_data', JSON.stringify(data.user));
+        currentUser = data.user;
+        
+        closeModal('login-modal');
+        updateUIForUserRole();
+        
+        const loginModal = document.getElementById('login-modal');
+        const requestedRole = loginModal ? loginModal.getAttribute('data-requested-role') : 'user';
+        
+        alert(`Добро пожаловать, ${data.user.name}!`);
+        
+        if (requestedRole === 'admin' && data.user.role !== 'admin') {
+            alert('Вы вошли как пользователь. Для доступа к функциям администратора войдите с учетной записью администратора.');
+        } else if (requestedRole === 'user' && data.user.role === 'admin') {
+            alert('Вы вошли как администратор. У вас есть доступ ко всем функциям.');
+            showSection('reports');
+        } else {
+            showSection('available-cars');
+        }
+        
+    } catch (error) {
+        console.error('Ошибка авторизации:', error);
+        document.getElementById('login-password').value = '';
+        alert('Ошибка авторизации: ' + error.message);
+    }
+}
+
+async function register() {
+    const name = document.getElementById('register-name').value;
+    const email = document.getElementById('register-email').value;
+    const phone = document.getElementById('register-phone').value;
+    const password = document.getElementById('register-password').value;
+    const confirmPassword = document.getElementById('register-confirm-password').value;
+    
+    if (!name || !email || !password || !confirmPassword) {
+        alert('Заполните все обязательные поля');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        alert('Пароли не совпадают');
+        document.getElementById('register-password').value = '';
+        document.getElementById('register-confirm-password').value = '';
+        document.getElementById('register-password').focus();
+        return;
+    }
+    
+    if (password.length < 6) {
+        alert('Пароль должен содержать минимум 6 символов');
+        document.getElementById('register-password').value = '';
+        document.getElementById('register-confirm-password').value = '';
+        document.getElementById('register-password').focus();
+        return;
+    }
+    
+    console.log('Попытка регистрации:', email);
+    
+    try {
+        const response = await fetch(`${API_BASE}/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password, name, phone })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Ошибка регистрации');
+        }
+        
+        const data = await response.json();
+        console.log('Успешная регистрация:', data.user.email);
+        
+        localStorage.setItem('auth_token', data.token);
+        localStorage.setItem('user_data', JSON.stringify(data.user));
+        currentUser = data.user;
+        
+        clearRegisterForm();
+        closeModal('register-modal');
+        updateUIForUserRole();
+        
+        alert(`Регистрация успешна! Добро пожаловать, ${data.user.name}!`);
+        showSection('available-cars');
+        
+    } catch (error) {
+        console.error('Ошибка регистрации:', error);
+        document.getElementById('register-password').value = '';
+        document.getElementById('register-confirm-password').value = '';
+        document.getElementById('register-password').focus();
+        alert('Ошибка регистрации: ' + error.message);
+    }
+}
+
+function logout() {
+    if (confirm('Вы уверены, что хотите выйти?')) {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_data');
+        currentUser = { role: 'guest' };
+        updateUIForUserRole();
+        showSection('available-cars');
+        alert('Вы успешно вышли из системы');
+    }
 }
 
 // =============================================
@@ -2059,7 +1784,6 @@ function resetForms() {
         clearInterval(confirmationTimer);
     }
     
-    // Скрываем формы
     const forms = [
         'confirmation-code-form',
         'confirmation-form',
@@ -2071,7 +1795,6 @@ function resetForms() {
         if (form) form.classList.add('hidden');
     });
     
-    // Очищаем поля
     const fields = [
         'client-name',
         'client-phone',
@@ -2084,29 +1807,18 @@ function resetForms() {
         if (field) field.value = '';
     });
     
-    // Сбрасываем подсказки
-    const hints = ['name-hint', 'phone-hint', 'email-hint'];
-    hints.forEach(hintId => {
-        const hint = document.getElementById(hintId);
-        if (hint) hint.style.color = '#666';
-    });
-    
-    // Сбрасываем таймер
     const timerElement = document.getElementById('confirmation-timer');
     if (timerElement) {
         timerElement.textContent = '05:00';
         timerElement.classList.remove('warning', 'danger');
     }
     
-    // Сбрасываем данные бронирования
     currentBookingData = null;
     
-    // Сбрасываем форму бронирования
     const bookingForm = document.getElementById('booking-form');
     if (bookingForm) bookingForm.reset();
     
-    // Устанавливаем даты по умолчанию
-    setDefaultDatesWithLimits();
+    setDefaultDates();
     
     console.log('Формы сброшены');
 }
